@@ -18,18 +18,19 @@ export function SetupHelper({ accessToken, isDemoMode, onSetupComplete }: SetupH
 
   const setupSampleData = async () => {
     setLoading(true);
-    
+
     try {
       // Add sample prizes
       const prizes = [
-        { name: 'Laptop Gaming', weight: 2 },
-        { name: 'Smartphone', weight: 5 },
-        { name: 'Smartwatch', weight: 6 },
-        { name: 'Headphone Premium', weight: 8 },
-        { name: 'Powerbank', weight: 10 },
-        { name: 'Voucher Rp 500.000', weight: 12 },
-        { name: 'Voucher Rp 100.000', weight: 15 },
-        { name: 'Tumbler Eksklusif', weight: 20 },
+        // Total weight: 100
+        { name: 'Tiket Liburan ke Bali (3D2N)', weight: 1 },         // 1%
+        { name: 'Drone Kamera Profesional', weight: 4 },            // 4%
+        { name: 'Smart TV 40 Inch', weight: 8 },                    // 8%
+        { name: 'Sepeda Gunung Premium', weight: 12 },               // 12%
+        { name: 'Voucher Belanja Rp 1.000.000', weight: 15 },         // 15%
+        { name: 'Earbuds Wireless Terbaik', weight: 18 },            // 18%
+        { name: 'Merchandise Eksklusif Acara', weight: 22 },          // 22%
+        { name: 'Diskon 50% Tiket Event Berikutnya', weight: 20 },     // 20%
       ];
 
       for (const prize of prizes) {
