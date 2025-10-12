@@ -17,21 +17,14 @@ export const DEMO_PARTICIPANTS = [
 ];
 
 export const DEMO_PRIZES = [
-  // Hadiah Sangat Eksklusif / Langka (Bobot Rendah: 1 - 5%)
-  { id: '1', name: 'Tiket Liburan ke Bali (3D2N)', weight: 1, createdAt: new Date().toISOString() }, // 1%
-  { id: '2', name: 'Drone Kamera Profesional', weight: 4, createdAt: new Date().toISOString() },      // 4%
-
-  // Hadiah Utama / Nilai Tinggi (Bobot Menengah: 5 - 10%)
-  { id: '3', name: 'Smart TV 40 Inch', weight: 8, createdAt: new Date().toISOString() },             // 8%
-  { id: '4', name: 'Sepeda Gunung Premium', weight: 12, createdAt: new Date().toISOString() },       // 12%
-
-  // Hadiah Menarik (Bobot Sedang: 15 - 20%)
-  { id: '5', name: 'Voucher Belanja Rp 1.000.000', weight: 15, createdAt: new Date().toISOString() }, // 15%
-  { id: '6', name: 'Earbuds Wireless Terbaik', weight: 18, createdAt: new Date().toISOString() },    // 18%
-
-  // Hadiah Penghibur (Bobot Tinggi: 20 - 30%)
-  { id: '7', name: 'Merchandise Eksklusif Acara', weight: 22, createdAt: new Date().toISOString() },  // 22%
-  { id: '8', name: 'Diskon 50% Tiket Event Berikutnya', weight: 20, createdAt: new Date().toISOString() }, // 20%
+  { id: '1', name: 'Laptop Gaming', weight: 2, createdAt: new Date().toISOString() },
+  { id: '2', name: 'Smartphone', weight: 5, createdAt: new Date().toISOString() },
+  { id: '3', name: 'Smartwatch', weight: 6, createdAt: new Date().toISOString() },
+  { id: '4', name: 'Headphone Premium', weight: 8, createdAt: new Date().toISOString() },
+  { id: '5', name: 'Powerbank', weight: 10, createdAt: new Date().toISOString() },
+  { id: '6', name: 'Voucher Rp 500.000', weight: 12, createdAt: new Date().toISOString() },
+  { id: '7', name: 'Voucher Rp 100.000', weight: 15, createdAt: new Date().toISOString() },
+  { id: '8', name: 'Tumbler Eksklusif', weight: 20, createdAt: new Date().toISOString() },
 ];
 
 export const DEMO_LOGS: any[] = [];

@@ -104,14 +104,13 @@ Gunakan kredensial yang baru dibuat untuk login.
 
 Contoh konfigurasi hadiah yang seimbang:
 
-| Hadiah | Bobot | Perhitungan Persentase | Persentase Aktual |
-| :--- | :--- | :--- | :--- |
-| Voucher Rp 100.000 | 15 | $(15 / 40) \times 100\%$ | **37.5%** |
-| Powerbank | 10 | $(10 / 40) \times 100\%$ | **25.0%** |
-| Headphone | 8 | $(8 / 40) \times 100\%$ | **20.0%** |
-| Smartwatch | 5 | $(5 / 40) \times 100\%$ | **12.5%** |
-| Laptop | 2 | $(2 / 40) \times 100\%$ | **5.0%** |
-| **TOTAL** | **40** | | **100.0%** |
+| Hadiah | Bobot | Persentase (~) |
+|--------|-------|----------------|
+| Voucher Rp 100.000 | 15 | 38% |
+| Powerbank | 10 | 25% |
+| Headphone | 8 | 20% |
+| Smartwatch | 5 | 13% |
+| Laptop | 2 | 5% |
 
 **Total Bobot**: 40
 
