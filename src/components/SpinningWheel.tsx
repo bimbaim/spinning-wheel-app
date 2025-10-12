@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import React from 'react';
 
 interface Prize {
   id: string;
@@ -14,6 +14,12 @@ interface SpinningWheelProps {
   size?: 'small' | 'medium' | 'large';
 }
 
+// Warna-warna solid untuk segmen roda
+const solidColors = [
+    '#667eea', '#f093fb', '#4facfe', '#43e97b', '#fa709a', '#30cfd0',
+    '#ff6b6b', '#feca57', '#30cfd0', '#78ffd6', '#a1c4fd', '#c471ed'
+];
+
 export function SpinningWheel({ 
   prizes, 
   selectedPrize, 
@@ -21,229 +27,186 @@ export function SpinningWheel({
   onSpinComplete,
   size = 'large' 
 }: SpinningWheelProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [rotation, setRotation] = useState(0);
-  const animationRef = useRef<number>();
-  const [dimensions, setDimensions] = useState({ width: 600, height: 600 });
+    
+  // --- KONSTANTA UKURAN ---
+  const sizeMap = {
+    small: 300,
+    medium: 450,
+    large: 600,
+  };
+  const wheelSize = sizeMap[size];
+  const pointerSize = wheelSize * 0.05;
+  const pointerHeight = wheelSize * 0.06;
+  
+  const numPrizes = prizes.length;
+  // Sudut per segmen (dalam derajat) - Semua segmen sama besar
+  const segmentAngle = 360 / numPrizes;
 
-  useEffect(() => {
-    if (size === 'small') {
-      setDimensions({ width: 300, height: 300 });
-    } else if (size === 'medium') {
-      setDimensions({ width: 450, height: 450 });
-    } else {
-      setDimensions({ width: 600, height: 600 });
+  // State untuk mengontrol rotasi visual (derajat) - AKUMULATIF
+  const [rotationDegrees, setRotationDegrees] = React.useState(0);
+  
+  // Ref untuk mendeteksi kapan animasi CSS selesai
+  const wheelRef = React.useRef<HTMLDivElement>(null);
+  const isTransitioningRef = React.useRef(false);
+
+  // --- LOGIKA ANIMASI & PENENTUAN TARGET ---
+  React.useEffect(() => {
+    // Pastikan kita hanya beroperasi saat sedang spin dan hadiah sudah dipilih
+    if (!isSpinning || !selectedPrize || isTransitioningRef.current) return;
+    
+    const targetIndex = prizes.findIndex(p => p.id === selectedPrize.id);
+    if (targetIndex === -1) return;
+
+    // **********************************************
+    // PERBAIKAN LOGIKA AKUMULASI ROTASI (DARI POSISI SEKARANG)
+    // **********************************************
+    
+    // 1. Hitung Sudut Pusat Hadiah Target (dari Jam 12/Atas)
+    // Indeks 0 dimulai di Jam 12 (0/360 derajat)
+    const centerAngleFromStart = targetIndex * segmentAngle + segmentAngle / 2;
+    
+    // 2. Sudut Target Mutlak: Posisi Jam 12 (pointer)
+    const pointerAngle = 360; 
+
+    // 3. Hitung Sudut Target Relatif dari 0 Derajat:
+    // degreesToTarget = (Pointer Angle - Center Angle)
+    let degreesToTarget = pointerAngle - centerAngleFromStart;
+    
+    // Normalisasi: Pastikan sudut target berada dalam 0-360
+    degreesToTarget = degreesToTarget % 360; 
+    if (degreesToTarget < 0) {
+      degreesToTarget += 360; 
     }
-  }, [size]);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const centerX = dimensions.width / 2;
-    const centerY = dimensions.height / 2;
-    const radius = Math.min(centerX, centerY) - 20;
-
-    // Clear canvas
-    ctx.clearRect(0, 0, dimensions.width, dimensions.height);
-
-    if (prizes.length === 0) {
-      // Draw empty state
-      ctx.fillStyle = '#1a1a2e';
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#ffffff';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.font = '20px Inter, sans-serif';
-      ctx.fillText('Tambahkan hadiah', centerX, centerY);
-      return;
-    }
-
-    // Calculate total weight
-    const totalWeight = prizes.reduce((sum, p) => sum + p.weight, 0);
-
-    // Draw segments
-    let currentAngle = rotation;
-    const colors = [
-      'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-      'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-      'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-      'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-      'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
-    ];
-
-    const solidColors = [
-      '#667eea', '#f093fb', '#4facfe', '#43e97b', '#fa709a', '#30cfd0'
-    ];
-
-    prizes.forEach((prize, index) => {
-      const sliceAngle = (prize.weight / totalWeight) * Math.PI * 2;
-      
-      // Draw slice
-      ctx.fillStyle = solidColors[index % solidColors.length];
-      ctx.beginPath();
-      ctx.moveTo(centerX, centerY);
-      ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle);
-      ctx.closePath();
-      ctx.fill();
-
-      // Draw border
-      ctx.strokeStyle = '#1a1a2e';
-      ctx.lineWidth = 3;
-      ctx.stroke();
-
-      // Draw text
-      const textAngle = currentAngle + sliceAngle / 2;
-      const textRadius = radius * 0.7;
-      const textX = centerX + Math.cos(textAngle) * textRadius;
-      const textY = centerY + Math.sin(textAngle) * textRadius;
-
-      ctx.save();
-      ctx.translate(textX, textY);
-      ctx.rotate(textAngle + Math.PI / 2);
-      ctx.fillStyle = '#ffffff';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.font = size === 'small' ? '12px Inter, sans-serif' : size === 'medium' ? '14px Inter, sans-serif' : '16px Inter, sans-serif';
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-      ctx.shadowBlur = 4;
-      ctx.fillText(prize.name, 0, 0);
-      ctx.restore();
-
-      currentAngle += sliceAngle;
-    });
-
-    // Draw outer ring
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 8;
-    ctx.shadowColor = '#ffffff';
-    ctx.shadowBlur = 15;
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius + 5, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.shadowBlur = 0;
-
-    // Draw center circle
-    ctx.fillStyle = '#1a1a2e';
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, 35, 0, Math.PI * 2);
-    ctx.fill();
     
-    // Center circle inner gradient effect
-    const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 35);
-    gradient.addColorStop(0, '#667eea');
-    gradient.addColorStop(1, '#764ba2');
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, 30, 0, Math.PI * 2);
-    ctx.fill();
+    // 4. Hitung Rotasi Target Mutlak Total
+    const extraRotations = Math.floor(Math.random() * 3) + 5; // 5-7 putaran penuh
+    const absoluteTargetRotation = (extraRotations * 360) + degreesToTarget;
     
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 3;
-    ctx.stroke();
+    // 5. Hitung Rotasi Delta (Perbedaan) yang Dibutuhkan DARI POSISI SEKARANG
+    
+    // Posisi roda saat ini, dinormalisasi ke 0-360:
+    const currentNormalizedRotation = rotationDegrees % 360;
+    
+    // Delta = (Target Mutlak) - (Posisi Normalisasi Sekarang)
+    // Penambahan 360 memastikan delta selalu positif (roda berputar CW maju)
+    const finalRotationDelta = (absoluteTargetRotation - currentNormalizedRotation) + 360; 
+    
+    // **********************************************
 
-    // Draw pointer/arrow at top
-    const pointerSize = size === 'small' ? 18 : size === 'medium' ? 24 : 30;
-    const pointerHeight = size === 'small' ? 20 : size === 'medium' ? 26 : 35;
+    isTransitioningRef.current = true;
     
-    // Pointer shadow
-    ctx.shadowColor = 'rgba(255, 107, 107, 0.6)';
-    ctx.shadowBlur = 15;
-    
-    // Pointer gradient
-    const pointerGradient = ctx.createLinearGradient(
-      centerX, centerY - radius - 15,
-      centerX, centerY - radius - 15 - pointerHeight
-    );
-    pointerGradient.addColorStop(0, '#ff6b6b');
-    pointerGradient.addColorStop(1, '#feca57');
-    ctx.fillStyle = pointerGradient;
-    
-    ctx.beginPath();
-    ctx.moveTo(centerX, centerY - radius - 15);
-    ctx.lineTo(centerX - pointerSize, centerY - radius - 15 - pointerHeight);
-    ctx.lineTo(centerX + pointerSize, centerY - radius - 15 - pointerHeight);
-    ctx.closePath();
-    ctx.fill();
-    
-    ctx.shadowBlur = 0;
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 3;
-    ctx.stroke();
+    // Atur rotasi baru: Posisi saat ini + Delta
+    setRotationDegrees(prev => prev + finalRotationDelta);
 
-  }, [prizes, rotation, dimensions, size]);
+  }, [isSpinning, selectedPrize, prizes, segmentAngle, rotationDegrees]);
 
-  useEffect(() => {
+  // --- HANDLER PENYELESAIAN ANIMASI CSS ---
+  const handleTransitionEnd = () => {
     if (isSpinning && selectedPrize) {
-      // Calculate target angle
-      const totalWeight = prizes.reduce((sum, p) => sum + p.weight, 0);
-      let targetAngle = 0;
-      let currentWeight = 0;
+      isTransitioningRef.current = false;
+      
+      // Normalisasi nilai rotasi untuk menghindari angka besar
+      const normalizedRotation = rotationDegrees % 360;
+      setRotationDegrees(normalizedRotation);
 
-      for (const prize of prizes) {
-        if (prize.id === selectedPrize.id) {
-          // Center of this prize segment
-          targetAngle = (currentWeight + prize.weight / 2) / totalWeight * Math.PI * 2;
-          break;
-        }
-        currentWeight += prize.weight;
+      if (onSpinComplete) {
+        onSpinComplete();
       }
-
-      // Add extra rotations for effect (5-7 full rotations)
-      const extraRotations = (5 + Math.random() * 2) * Math.PI * 2;
-      const finalAngle = extraRotations + (Math.PI * 2 - targetAngle);
-
-      let startTime: number | null = null;
-      const duration = 4000; // 4 seconds
-
-      const animate = (timestamp: number) => {
-        if (!startTime) startTime = timestamp;
-        const elapsed = timestamp - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-
-        // Easing function (ease-out cubic)
-        const easeOut = 1 - Math.pow(1 - progress, 3);
-        
-        setRotation(rotation + finalAngle * easeOut);
-
-        if (progress < 1) {
-          animationRef.current = requestAnimationFrame(animate);
-        } else {
-          setRotation(rotation + finalAngle);
-          if (onSpinComplete) {
-            setTimeout(onSpinComplete, 500);
-          }
-        }
-      };
-
-      animationRef.current = requestAnimationFrame(animate);
-
-      return () => {
-        if (animationRef.current) {
-          cancelAnimationFrame(animationRef.current);
-        }
-      };
     }
-  }, [isSpinning, selectedPrize]);
+  };
+
+  // --- Render Kosong ---
+  if (prizes.length === 0) {
+    return (
+        <div 
+            style={{ width: wheelSize, height: wheelSize }}
+            className="rounded-full bg-slate-800 flex items-center justify-center text-white border-4 border-slate-700 shadow-xl"
+        >
+            Tambahkan Hadiah
+        </div>
+    );
+  }
+  
+  // --- RENDERING RODA UTAMA (MENGGUNAKAN CSS CONIC-GRADIENT) ---
+  const conicGradient = prizes.map((p, index) => {
+      const start = index * segmentAngle;
+      const end = (index + 1) * segmentAngle;
+      const color = solidColors[index % solidColors.length];
+      
+      return `${color} ${start}deg ${end}deg`;
+  }).join(', ');
 
   return (
     <div className="relative inline-block">
-      <canvas
-        ref={canvasRef}
-        width={dimensions.width}
-        height={dimensions.height}
-        className="drop-shadow-2xl"
-        style={{
-          filter: isSpinning ? 'blur(2px)' : 'none',
-          transition: 'filter 0.3s ease'
-        }}
-      />
+        {/* Pointer/Arrow at Top (Posisi Jam 12) */}
+        <div 
+            style={{
+                top: -pointerHeight / 2, 
+                left: wheelSize / 2 - pointerSize,
+                borderLeft: `${pointerSize}px solid transparent`,
+                borderRight: `${pointerSize}px solid transparent`,
+                borderBottom: `${pointerHeight}px solid #ff6b6b`,
+                filter: 'drop-shadow(0 0 10px rgba(255, 107, 107, 0.8))'
+            }}
+            className="absolute z-20 w-0 h-0"
+        ></div>
+
+        {/* The Spinning Wheel */}
+        <div
+            ref={wheelRef}
+            onTransitionEnd={handleTransitionEnd}
+            style={{
+                width: wheelSize,
+                height: wheelSize,
+                backgroundImage: `conic-gradient(${conicGradient})`,
+                transform: `rotate(${rotationDegrees}deg)`,
+                transition: isSpinning && isTransitioningRef.current 
+                    ? `transform 4s cubic-bezier(0.2, 0.8, 0.7, 1.0)`
+                    : 'none',
+            }}
+            className={`
+                relative rounded-full border-[10px] border-white shadow-[0_0_30px_rgba(255,255,255,0.5)] 
+                ${isSpinning ? 'blur-[2px]' : ''} 
+                transition-all duration-300
+            `}
+        >
+            {/* Prize Labels */}
+            {prizes.map((prize, index) => {
+                // Sudut untuk teks (Pusat segmen dari posisi Jam 12)
+                const angle = index * segmentAngle + (segmentAngle / 2);
+                
+                return (
+                    <div
+                        key={prize.id}
+                        style={{
+                            // Terapkan rotasi untuk memposisikan dan meluruskan teks
+                            transform: `
+                                rotate(${angle}deg) 
+                                translate(0, ${-wheelSize * 0.4}px) 
+                                rotate(90deg)
+                            `,
+                            width: wheelSize * 0.35, 
+                            fontSize: size === 'small' ? '12px' : size === 'medium' ? '14px' : '16px',
+                        }}
+                        className={`
+                            absolute top-1/2 left-1/2 origin-[0%_0%] 
+                            -translate-x-1/2 text-white text-center font-bold 
+                            p-1 pointer-events-none drop-shadow-[0_0_4px_rgba(0,0,0,0.8)]
+                        `}
+                    >
+                        {prize.name}
+                    </div>
+                );
+            })}
+
+            {/* Center Circle */}
+            <div 
+                style={{ width: wheelSize * 0.12, height: wheelSize * 0.12 }}
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 
+                    rounded-full bg-gradient-to-br from-purple-500 to-indigo-700 
+                    border-4 border-white shadow-xl z-10"
+            ></div>
+        </div>
     </div>
   );
 }

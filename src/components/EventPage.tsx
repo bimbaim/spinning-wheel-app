@@ -92,8 +92,9 @@ export function EventPage({ isDemoMode, onBack, onViewResults }: EventPageProps)
     setStage('spinning');
 
     try {
+      let prize;
       if (isDemoMode) {
-        const prize = demoAPI.spinWheel();
+        prize = demoAPI.spinWheel();
         setSelectedPrize(prize);
       } else {
         const res = await fetch(`${apiUrl}/event/spin`, {
@@ -103,7 +104,8 @@ export function EventPage({ isDemoMode, onBack, onViewResults }: EventPageProps)
         });
         const data = await res.json();
         
-        setSelectedPrize(data.prize);
+        prize = data.prize;
+        setSelectedPrize(prize);
       }
     } catch (error) {
       console.error('Error spinning:', error);
@@ -114,16 +116,22 @@ export function EventPage({ isDemoMode, onBack, onViewResults }: EventPageProps)
   const handleSpinComplete = () => {
     if (!selectedPrize) return;
 
+    // Tambahkan hadiah yang sudah dipilih (selectedPrize) ke hasil
     const newResults = [...spinResults, selectedPrize];
     setSpinResults(newResults);
     setCurrentSpin(currentSpin + 1);
     setIsSpinning(false);
     setStage('result');
+    // PENTING: Jangan reset selectedPrize di sini, biarkan state-nya menahan hasil spin terakhir
+    // Reset akan dilakukan saat handleContinueSpin dipanggil atau sesi selesai.
 
     if (currentSpin + 1 >= (currentParticipant?.chances || 1)) {
-      // All spins complete
+      // Semua spin selesai
       setTimeout(() => {
         if (currentParticipant) {
+          if (isDemoMode) {
+            demoAPI.completeSession(currentParticipant.id, newResults);
+          }
           onViewResults(currentParticipant, newResults);
         }
       }, 2000);
@@ -131,9 +139,11 @@ export function EventPage({ isDemoMode, onBack, onViewResults }: EventPageProps)
   };
 
   const handleContinueSpin = () => {
-    setSelectedPrize(null);
+    setSelectedPrize(null); // Reset selectedPrize agar spin berikutnya bisa memilih yang baru
     setStage('ready');
   };
+
+  const finalPrizeName = spinResults[spinResults.length - 1]?.name;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
@@ -196,7 +206,7 @@ export function EventPage({ isDemoMode, onBack, onViewResults }: EventPageProps)
         </div>
 
         {/* Result Display */}
-        {stage === 'result' && selectedPrize && (
+        {stage === 'result' && finalPrizeName && (
           <div className="mb-8 relative animate-bounce">
             <div className="absolute inset-0 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-2xl blur-2xl opacity-60"></div>
             <div className="relative bg-gradient-to-r from-yellow-500/20 to-orange-500/20 backdrop-blur-xl rounded-2xl border-2 border-yellow-500/50 px-16 py-10 shadow-2xl">
@@ -208,7 +218,7 @@ export function EventPage({ isDemoMode, onBack, onViewResults }: EventPageProps)
                   </div>
                 </div>
                 <p className="text-yellow-300 mb-3 tracking-wider uppercase">🎉 Selamat! Anda Mendapat 🎉</p>
-                <h1 className="text-white mb-2 animate-pulse">{selectedPrize.name}</h1>
+                <h1 className="text-white mb-2 animate-pulse">{finalPrizeName}</h1>
               </div>
             </div>
           </div>
