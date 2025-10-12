@@ -33,7 +33,7 @@ app.post(`${PREFIX}/signup`, async (c) => {
       password,
       user_metadata: { name },
       // Automatically confirm the user's email since an email server hasn't been configured.
-      email_confirm: true
+      email_confirm: false
     });
 
     if (error) {
