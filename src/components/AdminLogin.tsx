@@ -145,7 +145,7 @@ export function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
               className="w-full bg-gradient-to-r from-green-500/20 to-teal-500/20 border-green-500/50 text-green-400 hover:bg-green-500/30 hover:text-green-300"
             >
               <Zap className="w-4 h-4 mr-2" />
-              Demo Mode (Without Supabase)
+              Demo Mode (Without Database)
             </Button>
             <p className="text-slate-500 text-xs text-center mt-2">
               Email: {DEMO_CREDENTIALS.email} | Password: {DEMO_CREDENTIALS.password}

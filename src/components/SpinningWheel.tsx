@@ -55,7 +55,6 @@ export function SpinningWheel({
 
   // --- LOGIKA ANIMASI & PENENTUAN TARGET ---
   React.useEffect(() => {
-    // Pastikan kita hanya beroperasi saat sedang spin dan hadiah sudah dipilih
     if (!isSpinning || !selectedPrize || isTransitioningRef.current) return;
     
     const targetIndex = availablePrizes.findIndex(p => p.id === selectedPrize.id);
@@ -63,53 +62,23 @@ export function SpinningWheel({
       console.error('Selected prize not found in available prizes!');
       return;
     }
-
-    console.log('🎯 Starting spin animation for:', selectedPrize.name, 'at index:', targetIndex);
-
-    // **********************************************
-    // PERBAIKAN LOGIKA AKUMULASI ROTASI (DARI POSISI SEKARANG)
-    // **********************************************
     
-    // 1. Hitung Sudut Pusat Hadiah Target (dari Jam 12/Atas)
-    // Indeks 0 dimulai di Jam 12 (0/360 derajat)
     const centerAngleFromStart = targetIndex * segmentAngle + segmentAngle / 2;
-    
-    // 2. Sudut Target Mutlak: Posisi Jam 12 (pointer)
     const pointerAngle = 360; 
-
-    // 3. Hitung Sudut Target Relatif dari 0 Derajat:
-    // degreesToTarget = (Pointer Angle - Center Angle)
     let degreesToTarget = pointerAngle - centerAngleFromStart;
     
-    // Normalisasi: Pastikan sudut target berada dalam 0-360
     degreesToTarget = degreesToTarget % 360; 
     if (degreesToTarget < 0) {
       degreesToTarget += 360; 
     }
     
-    // 4. Hitung Rotasi Target Mutlak Total
-    const extraRotations = Math.floor(Math.random() * 3) + 5; // 5-7 putaran penuh
+    const extraRotations = Math.floor(Math.random() * 3) + 5; 
     const absoluteTargetRotation = (extraRotations * 360) + degreesToTarget;
     
-    // 5. Hitung Rotasi Delta (Perbedaan) yang Dibutuhkan DARI POSISI SEKARANG
-    
-    // Posisi roda saat ini, dinormalisasi ke 0-360:
     const currentNormalizedRotation = rotationDegrees % 360;
-    
-    // Delta = (Target Mutlak) - (Posisi Normalisasi Sekarang)
-    // Penambahan 360 memastikan delta selalu positif (roda berputar CW maju)
     const finalRotationDelta = (absoluteTargetRotation - currentNormalizedRotation) + 360; 
     
-    console.log('📐 Target index:', targetIndex);
-    console.log('📐 Center angle from start:', centerAngleFromStart);
-    console.log('📐 Degrees to target:', degreesToTarget);
-    console.log('📐 Final rotation delta:', finalRotationDelta);
-    
-    // **********************************************
-
     isTransitioningRef.current = true;
-    
-    // Atur rotasi baru: Posisi saat ini + Delta
     setRotationDegrees(prev => prev + finalRotationDelta);
 
   }, [isSpinning, selectedPrize, availablePrizes, segmentAngle, rotationDegrees]);
@@ -119,9 +88,6 @@ export function SpinningWheel({
     if (isSpinning && selectedPrize) {
       isTransitioningRef.current = false;
       
-      console.log('✅ Animation complete. Prize:', selectedPrize.name);
-      
-      // Normalisasi nilai rotasi untuk menghindari angka besar
       const normalizedRotation = rotationDegrees % 360;
       setRotationDegrees(normalizedRotation);
 
@@ -156,16 +122,22 @@ export function SpinningWheel({
     <div className="relative inline-block">
         {/* Pointer/Arrow at Top (Posisi Jam 12) */}
         <div 
-            style={{
-                top: -pointerHeight / 2, 
-                left: wheelSize / 2 - pointerSize,
-                borderLeft: `${pointerSize}px solid transparent`,
-                borderRight: `${pointerSize}px solid transparent`,
-                borderBottom: `${pointerHeight}px solid #ff6b6b`,
-                filter: 'drop-shadow(0 0 10px rgba(255, 107, 107, 0.8))'
-            }}
-            className="absolute z-20 w-0 h-0"
-        ></div>
+    style={{
+        // Posisi tetap sama: Di atas roda, di tengah horizontal
+        top: -pointerHeight / 2, 
+        left: wheelSize / 2 - pointerSize,
+        
+        // Pembentukan Segitiga Dibalik: Menggunakan border-top
+        borderLeft: `${pointerSize}px solid transparent`,
+        borderRight: `${pointerSize}px solid transparent`,
+        // **PERUBAHAN UTAMA:** Gunakan borderTop untuk membalik arah
+        borderTop: `${pointerHeight}px solid #ff6b6b`,
+        borderBottom: 'none', // Pastikan properti yang lama dinonaktifkan
+        
+        filter: 'drop-shadow(0 0 10px rgba(255, 107, 107, 0.8))'
+    }}
+    className="absolute z-20 w-0 h-0"
+></div>
 
         {/* The Spinning Wheel */}
         <div
@@ -186,27 +158,48 @@ export function SpinningWheel({
                 transition-all duration-300
             `}
         >
-            {/* Prize Labels */}
+            {/* Prize Labels - PENDENGKATAN BARU */}
             {availablePrizes.map((prize, index) => {
-                // Sudut untuk teks (Pusat segmen dari posisi Jam 12)
-                const angle = index * segmentAngle + (segmentAngle / 2);
+                // Sudut pusat segmen, diukur dari 0 (atas) ke kanan (searah jarum jam)
+                const centerAngle = index * segmentAngle + (segmentAngle / 2);
+                
+                // Jarak radial teks dari pusat roda (Misalnya: 70% dari radius roda)
+                const textDistance = wheelSize * 0.35; 
+                // Lebar label agar dapat mengakomodasi teks panjang
+                const labelWidth = wheelSize * 0.45; 
                 
                 return (
                     <div
                         key={prize.id}
                         style={{
-                            // Terapkan rotasi untuk memposisikan dan meluruskan teks
-                            transform: `
-                                rotate(${angle}deg) 
-                                translate(0, ${-wheelSize * 0.4}px) 
-                                rotate(90deg)
-                            `,
-                            width: wheelSize * 0.35, 
+                            // Posisikan label di tengah roda (sebelum transformasi)
+                            top: '50%',
+                            left: '50%',
+                            // Atur lebar & ukuran font
+                            width: labelWidth, 
                             fontSize: size === 'small' ? '12px' : size === 'medium' ? '14px' : '16px',
+                            
+                            // *** Rantai Transformasi yang Ditingkatkan ***
+                            transform: `
+                                /* 1. Putar seluruh sistem ke posisi segmen yang benar */
+                                rotate(${centerAngle}deg) 
+                                
+                                /* 2. Geser label ke posisi radialnya */
+                                translateY(${-textDistance}px) 
+
+                                /* 3. Putar label kembali untuk meluruskan teks ke horizontal (atau 90 deg) */
+                                /* Jika 0deg, teks akan sejajar dengan jari-jari (terbaca dari pusat ke luar) */
+                                /* Jika 90deg, teks akan tegak lurus jari-jari (lebih umum) */
+                                rotate(90deg)
+
+                                /* 4. Geser label kembali 50% dari lebarnya untuk memusatkannya */
+                                translateX(-50%) 
+                            `,
+                            // Atur pusat rotasi ke tengah roda (pusat elemen)
+                            transformOrigin: '0 0',
                         }}
                         className={`
-                            absolute top-1/2 left-1/2 origin-[0%_0%] 
-                            -translate-x-1/2 text-white text-center font-bold 
+                            absolute text-white text-center font-bold 
                             p-1 pointer-events-none drop-shadow-[0_0_4px_rgba(0,0,0,0.8)]
                         `}
                     >

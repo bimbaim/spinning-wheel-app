@@ -373,7 +373,7 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent,
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
               <StatsCard
                 icon={Users}
-                label="Total Peserta"
+                label="Total Participants"
                 value={participants.length}
                 color="purple"
               />
