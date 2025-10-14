@@ -50,7 +50,7 @@ export function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
       }
     } catch (err) {
       console.error('Login error:', err);
-      setError('Terjadi kesalahan saat login');
+      setError('An error occurred during login');
     } finally {
       setLoading(false);
     }
@@ -75,8 +75,8 @@ export function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 mb-4 shadow-lg shadow-purple-500/50">
             <Sparkles className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-white mb-2">Panel Admin Event</h1>
-          <p className="text-slate-300">Sistem Spinning Wheel</p>
+          <h1 className="text-white mb-2">Event Admin Panel</h1>
+          <p className="text-slate-300">Spinning Wheel System</p>
         </div>
 
         {/* Login Card */}
@@ -132,7 +132,7 @@ export function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
               disabled={loading}
               className="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white shadow-lg shadow-purple-500/30 transition-all duration-300 hover:shadow-purple-500/50"
             >
-              {loading ? 'Memproses...' : 'Masuk'}
+              {loading ? 'Processing...' : 'Sign In'}
             </Button>
           </form>
 
@@ -145,7 +145,7 @@ export function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
               className="w-full bg-gradient-to-r from-green-500/20 to-teal-500/20 border-green-500/50 text-green-400 hover:bg-green-500/30 hover:text-green-300"
             >
               <Zap className="w-4 h-4 mr-2" />
-              Mode Demo (Tanpa Supabase)
+              Demo Mode (Without Supabase)
             </Button>
             <p className="text-slate-500 text-xs text-center mt-2">
               Email: {DEMO_CREDENTIALS.email} | Password: {DEMO_CREDENTIALS.password}
@@ -154,18 +154,18 @@ export function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
 
           <div className="mt-6 pt-6 border-t border-slate-700">
             <p className="text-slate-400 text-center text-sm mb-2">
-              Belum punya akun admin?
+              Don't have an admin account?
             </p>
             <details className="bg-slate-900/50 rounded-lg p-4 text-sm">
               <summary className="text-purple-400 cursor-pointer hover:text-purple-300 text-center">
-                Klik untuk melihat panduan setup
+                Click to view setup guide
               </summary>
               <div className="mt-3 text-slate-400 space-y-2">
-                <p className="text-xs">Buka Browser Console (F12) dan jalankan:</p>
+                <p className="text-xs">Open Browser Console (F12) and run:</p>
                 <code className="block bg-slate-950 p-2 rounded text-purple-300 text-xs overflow-x-auto">
                   setupAdmin("admin@event.com", "admin123", "Admin")
                 </code>
-                <p className="text-xs">Lalu login dengan kredensial tersebut.</p>
+                <p className="text-xs">Then login with those credentials.</p>
               </div>
             </details>
           </div>

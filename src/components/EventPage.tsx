@@ -16,6 +16,7 @@ interface Prize {
   id: string;
   name: string;
   weight: number;
+  quantity: number;
 }
 
 interface EventPageProps {
@@ -64,8 +65,10 @@ export function EventPage({ isDemoMode, onBack, onViewResults }: EventPageProps)
           setSpinResults([]);
           setCurrentSpin(0);
           setStage('ready');
+          // Refresh prizes to get updated quantities
+          fetchPrizes();
         } else {
-          alert('Tidak ada peserta yang tersisa!');
+          alert('No remaining participants!');
         }
       } else {
         const res = await fetch(`${apiUrl}/event/next-participant`);
@@ -76,8 +79,10 @@ export function EventPage({ isDemoMode, onBack, onViewResults }: EventPageProps)
           setSpinResults([]);
           setCurrentSpin(0);
           setStage('ready');
+          // Refresh prizes to get updated quantities
+          fetchPrizes();
         } else {
-          alert('Tidak ada peserta yang tersisa!');
+          alert('No remaining participants!');
         }
       }
     } catch (error) {
@@ -96,6 +101,7 @@ export function EventPage({ isDemoMode, onBack, onViewResults }: EventPageProps)
       if (isDemoMode) {
         prize = demoAPI.spinWheel();
         setSelectedPrize(prize);
+        console.log('🎲 Spin result determined:', prize.name, '(ID:', prize.id, ', Weight:', prize.weight, ', Qty:', prize.quantity, ')');
       } else {
         const res = await fetch(`${apiUrl}/event/spin`, {
           method: 'POST',
@@ -106,6 +112,7 @@ export function EventPage({ isDemoMode, onBack, onViewResults }: EventPageProps)
         
         prize = data.prize;
         setSelectedPrize(prize);
+        console.log('🎲 Spin result determined:', prize.name, '(ID:', prize.id, ')');
       }
     } catch (error) {
       console.error('Error spinning:', error);
@@ -116,12 +123,18 @@ export function EventPage({ isDemoMode, onBack, onViewResults }: EventPageProps)
   const handleSpinComplete = () => {
     if (!selectedPrize) return;
 
+    console.log('✨ Spin complete. Showing result:', selectedPrize.name, '(ID:', selectedPrize.id, ')');
+    
     // Tambahkan hadiah yang sudah dipilih (selectedPrize) ke hasil
     const newResults = [...spinResults, selectedPrize];
     setSpinResults(newResults);
     setCurrentSpin(currentSpin + 1);
     setIsSpinning(false);
     setStage('result');
+    
+    // Refresh prizes untuk update quantity
+    fetchPrizes();
+    
     // PENTING: Jangan reset selectedPrize di sini, biarkan state-nya menahan hasil spin terakhir
     // Reset akan dilakukan saat handleContinueSpin dipanggil atau sesi selesai.
 
@@ -139,6 +152,7 @@ export function EventPage({ isDemoMode, onBack, onViewResults }: EventPageProps)
   };
 
   const handleContinueSpin = () => {
+    console.log('🔄 Resetting for next spin. Previous prize was:', selectedPrize?.name);
     setSelectedPrize(null); // Reset selectedPrize agar spin berikutnya bisa memilih yang baru
     setStage('ready');
   };
@@ -162,11 +176,11 @@ export function EventPage({ isDemoMode, onBack, onViewResults }: EventPageProps)
           className="text-slate-300 hover:text-white hover:bg-slate-800"
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
-          Kembali ke Dashboard
+          Back to Dashboard
         </Button>
         <div className="text-center">
           <h1 className="text-white">Event Spinning Wheel</h1>
-          <p className="text-slate-400 text-sm">Mode Operasi - Layar Penuh</p>
+          <p className="text-slate-400 text-sm">Operation Mode - Full Screen</p>
         </div>
         <div className="w-40"></div>
       </div>
@@ -183,10 +197,10 @@ export function EventPage({ isDemoMode, onBack, onViewResults }: EventPageProps)
                   <User className="w-6 h-6 text-white" />
                 </div>
                 <div className="text-center">
-                  <p className="text-slate-400 text-sm mb-1 tracking-wider">PESERTA SAAT INI</p>
+                  <p className="text-slate-400 text-sm mb-1 tracking-wider">CURRENT PARTICIPANT</p>
                   <h2 className="text-white mb-1">{currentParticipant.name}</h2>
                   <p className="text-purple-400">
-                    {currentParticipant.chances}x Spin | Spin ke-{currentSpin + 1}
+                    {currentParticipant.chances}x Spins | Spin #{currentSpin + 1}
                   </p>
                 </div>
               </div>
@@ -217,7 +231,7 @@ export function EventPage({ isDemoMode, onBack, onViewResults }: EventPageProps)
                     <div className="w-20 h-20 bg-yellow-400/20 rounded-full animate-ping"></div>
                   </div>
                 </div>
-                <p className="text-yellow-300 mb-3 tracking-wider uppercase">🎉 Selamat! Anda Mendapat 🎉</p>
+                <p className="text-yellow-300 mb-3 tracking-wider uppercase">🎉 Congratulations! You Won 🎉</p>
                 <h1 className="text-white mb-2 animate-pulse">{finalPrizeName}</h1>
               </div>
             </div>
@@ -232,18 +246,18 @@ export function EventPage({ isDemoMode, onBack, onViewResults }: EventPageProps)
               className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white shadow-2xl shadow-purple-500/50 px-12 py-6 text-xl transition-all duration-300 hover:scale-105"
             >
               <User className="w-6 h-6 mr-3" />
-              PANGGIL PESERTA BERIKUTNYA
+              CALL NEXT PARTICIPANT
             </Button>
           )}
 
           {stage === 'ready' && (
             <Button
               onClick={handleSpin}
-              disabled={isSpinning || prizes.length === 0}
-              className="bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white shadow-2xl shadow-green-500/50 px-12 py-6 text-xl transition-all duration-300 hover:scale-105"
+              disabled={isSpinning || prizes.filter(p => p.quantity > 0).length === 0}
+              className="bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white shadow-2xl shadow-green-500/50 px-12 py-6 text-xl transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Sparkles className="w-6 h-6 mr-3" />
-              SPIN HADIAH ({currentSpin + 1}/{currentParticipant?.chances})
+              {prizes.filter(p => p.quantity > 0).length === 0 ? 'NO PRIZES AVAILABLE' : `SPIN PRIZE (${currentSpin + 1}/${currentParticipant?.chances})`}
             </Button>
           )}
 
@@ -252,7 +266,7 @@ export function EventPage({ isDemoMode, onBack, onViewResults }: EventPageProps)
               onClick={handleContinueSpin}
               className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white shadow-2xl shadow-blue-500/50 px-12 py-6 text-xl transition-all duration-300 hover:scale-105"
             >
-              LANJUT SPIN BERIKUTNYA
+              CONTINUE TO NEXT SPIN
             </Button>
           )}
         </div>
@@ -260,7 +274,7 @@ export function EventPage({ isDemoMode, onBack, onViewResults }: EventPageProps)
         {/* Spin Progress */}
         {currentParticipant && spinResults.length > 0 && (
           <div className="mt-8 bg-slate-800/50 backdrop-blur-xl rounded-xl border border-slate-700 p-6 min-w-96">
-            <h3 className="text-white mb-4 text-center">Hasil Spin</h3>
+            <h3 className="text-white mb-4 text-center">Spin Results</h3>
             <div className="space-y-2">
               {spinResults.map((result, idx) => (
                 <div

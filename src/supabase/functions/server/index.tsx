@@ -216,11 +216,17 @@ app.post(`${PREFIX}/prizes`, async (c) => {
       return c.json({ error: 'Name and weight are required' }, 400);
     }
 
+    // Validate weight
+    const weightNum = parseInt(weight);
+    if (weightNum <= 0 || weightNum > 100) {
+      return c.json({ error: 'Weight must be between 1-100' }, 400);
+    }
+
     const id = crypto.randomUUID();
     const prize = {
       id,
       name,
-      weight: parseInt(weight),
+      weight: weightNum,
       createdAt: new Date().toISOString()
     };
 
@@ -248,6 +254,14 @@ app.put(`${PREFIX}/prizes/:id`, async (c) => {
     const existing = await kv.get(`prize:${id}`);
     if (!existing) {
       return c.json({ error: 'Prize not found' }, 404);
+    }
+
+    // Validate weight if it's being updated
+    if (weight !== undefined) {
+      const weightNum = parseInt(weight);
+      if (weightNum <= 0 || weightNum > 100) {
+        return c.json({ error: 'Weight must be between 1-100' }, 400);
+      }
     }
 
     const updated = {
@@ -326,7 +340,7 @@ app.post(`${PREFIX}/event/spin`, async (c) => {
       return c.json({ error: 'No prizes available' }, 400);
     }
 
-    // Weighted random selection
+    // Weighted random selection (probability-based)
     const totalWeight = prizes.reduce((sum, p) => sum + p.weight, 0);
     let random = Math.random() * totalWeight;
     let selectedPrize = prizes[0];

@@ -3,11 +3,12 @@ import { AdminLogin } from './components/AdminLogin';
 import { AdminDashboard } from './components/AdminDashboard';
 import { EventPage } from './components/EventPage';
 import { EventResults } from './components/EventResults';
+import { SlotSpinPage } from './components/SlotSpinPage';
 import { supabase } from './utils/supabase/client';
 import { projectId } from './utils/supabase/info';
 import './utils/setup-admin';
 
-type AppView = 'login' | 'dashboard' | 'event' | 'results';
+type AppView = 'login' | 'dashboard' | 'event' | 'results' | 'slot-spin';
 
 interface Participant {
   id: string;
@@ -19,7 +20,8 @@ interface Participant {
 interface Prize {
   id: string;
   name: string;
-  weight: number;
+  weight: number; // Weight/probability (1-100)
+  quantity: number; // Available quantity
 }
 
 export default function App() {
@@ -121,6 +123,7 @@ export default function App() {
           isDemoMode={isDemoMode}
           onLogout={handleLogout}
           onViewEvent={handleViewEvent}
+          onViewSlotSpin={() => setView('slot-spin')}
         />
       )}
       
@@ -129,6 +132,13 @@ export default function App() {
           isDemoMode={isDemoMode}
           onBack={() => setView('dashboard')}
           onViewResults={handleViewResults}
+        />
+      )}
+      
+      {view === 'slot-spin' && (
+        <SlotSpinPage
+          isDemoMode={isDemoMode}
+          onBack={() => setView('dashboard')}
         />
       )}
       

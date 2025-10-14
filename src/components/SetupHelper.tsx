@@ -20,7 +20,7 @@ export function SetupHelper({ accessToken, isDemoMode, onSetupComplete }: SetupH
     setLoading(true);
     
     try {
-      // Add sample prizes
+      // Add sample prizes with weights
       const prizes = [
         { name: 'Laptop Gaming', weight: 2 },
         { name: 'Smartphone', weight: 5 },
@@ -75,16 +75,16 @@ export function SetupHelper({ accessToken, isDemoMode, onSetupComplete }: SetupH
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          className="bg-gradient-to-r from-green-500/20 to-teal-500/20 border-green-500/50 text-green-400 hover:bg-green-500/30"
-        >
-          <Wand2 className="w-4 h-4 mr-2" />
-          Setup Data Sample
-        </Button>
-      </DialogTrigger>
+    <>
+      <Button
+        variant="outline"
+        onClick={() => setOpen(true)}
+        className="bg-gradient-to-r from-green-500/20 to-teal-500/20 border-green-500/50 text-green-400 hover:bg-green-500/30"
+      >
+        <Wand2 className="w-4 h-4 mr-2" />
+        Setup Data Sample
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="bg-slate-800 text-white border-slate-700">
         <DialogHeader>
           <DialogTitle>Setup Data Sample</DialogTitle>
@@ -99,7 +99,7 @@ export function SetupHelper({ accessToken, isDemoMode, onSetupComplete }: SetupH
               <Gift className="w-5 h-5 text-purple-400" />
               <div>
                 <p className="text-white">8 Hadiah</p>
-                <p className="text-slate-400 text-sm">Dengan berbagai bobot peluang</p>
+                <p className="text-slate-400 text-sm">Dengan bobot peluang berbeda</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -127,5 +127,6 @@ export function SetupHelper({ accessToken, isDemoMode, onSetupComplete }: SetupH
         </div>
       </DialogContent>
     </Dialog>
+    </>
   );
 }

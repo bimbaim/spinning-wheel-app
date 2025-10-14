@@ -71,7 +71,7 @@ export function EventResults({ participant, results, prizes, isDemoMode, onConti
             {/* Left: Wheel Display */}
             <div className="flex flex-col items-center justify-center">
               <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-700 p-8">
-                <h2 className="text-white text-center mb-6">Roda Hadiah</h2>
+                <h2 className="text-white text-center mb-6">Prize Wheel</h2>
                 <SpinningWheel
                   prizes={prizes}
                   isSpinning={false}
@@ -86,13 +86,13 @@ export function EventResults({ participant, results, prizes, isDemoMode, onConti
                 {/* Header */}
                 <div className="text-center mb-8">
                   <Trophy className="w-16 h-16 text-yellow-400 mx-auto mb-4 animate-bounce" />
-                  <h1 className="text-white mb-2">Hasil Undian</h1>
-                  <p className="text-slate-400">untuk {participant.name}</p>
+                  <h1 className="text-white mb-2">Draw Results</h1>
+                  <p className="text-slate-400">for {participant.name}</p>
                 </div>
 
                 {/* Results List */}
                 <div className="space-y-3 mb-8">
-                  <h3 className="text-white mb-4">Hadiah yang Diperoleh:</h3>
+                  <h3 className="text-white mb-4">Prizes Won:</h3>
                   {results.map((result, idx) => (
                     <div
                       key={idx}
@@ -119,7 +119,7 @@ export function EventResults({ participant, results, prizes, isDemoMode, onConti
                     className="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white shadow-lg shadow-purple-500/30 py-6"
                   >
                     <ArrowRight className="w-5 h-5 mr-2" />
-                    {saving ? 'Menyimpan...' : 'Lanjutkan ke Peserta Berikutnya'}
+                    {saving ? 'Saving...' : 'Continue to Next Participant'}
                   </Button>
 
                   <Button
@@ -128,7 +128,7 @@ export function EventResults({ participant, results, prizes, isDemoMode, onConti
                     className="w-full bg-slate-900/50 border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white py-6"
                   >
                     <FileText className="w-5 h-5 mr-2" />
-                    Lihat Log Event Lengkap
+                    View Full Event Logs
                   </Button>
                 </div>
               </div>
@@ -140,8 +140,8 @@ export function EventResults({ participant, results, prizes, isDemoMode, onConti
                     <Trophy className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <p className="text-slate-400 text-sm">Total Hadiah Diperoleh</p>
-                    <p className="text-white">{results.length} Hadiah</p>
+                    <p className="text-slate-400 text-sm">Total Prizes Won</p>
+                    <p className="text-white">{results.length} Prize{results.length !== 1 ? 's' : ''}</p>
                   </div>
                 </div>
               </div>

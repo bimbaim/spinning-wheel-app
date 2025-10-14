@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Users, Gift, FileText, Monitor, LogOut, Upload, Plus, Edit, Trash2, RotateCcw, CheckCircle, XCircle, Zap } from 'lucide-react';
+import { Users, Gift, FileText, Monitor, LogOut, Upload, Plus, Edit, Trash2, RotateCcw, CheckCircle, XCircle, Zap, Trophy } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -19,7 +19,8 @@ interface Participant {
 interface Prize {
   id: string;
   name: string;
-  weight: number;
+  weight: number; // Weight/probability (1-100)
+  quantity: number; // Available quantity
 }
 
 interface EventLog {
@@ -34,9 +35,10 @@ interface AdminDashboardProps {
   isDemoMode: boolean;
   onLogout: () => void;
   onViewEvent: () => void;
+  onViewSlotSpin: () => void;
 }
 
-export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent }: AdminDashboardProps) {
+export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent, onViewSlotSpin }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<'participants' | 'prizes' | 'logs'>('participants');
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [prizes, setPrizes] = useState<Prize[]>([]);
@@ -51,7 +53,8 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent 
 
   // Prize form state
   const [prizeName, setPrizeName] = useState('');
-  const [prizeWeight, setPrizeWeight] = useState('1');
+  const [prizeWeight, setPrizeWeight] = useState('10');
+  const [prizeQuantity, setPrizeQuantity] = useState('10');
   const [editingPrize, setEditingPrize] = useState<Prize | null>(null);
   const [isPrizeDialogOpen, setIsPrizeDialogOpen] = useState(false);
 
@@ -161,7 +164,7 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent 
   };
 
   const handleDeleteParticipant = async (id: string) => {
-    if (!confirm('Yakin ingin menghapus peserta ini?')) return;
+    if (!confirm('Are you sure you want to delete this participant?')) return;
     try {
       if (isDemoMode) {
         demoAPI.deleteParticipant(id);
@@ -178,7 +181,7 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent 
   };
 
   const handleResetDrawn = async () => {
-    if (!confirm('Yakin ingin mereset status undian semua peserta?')) return;
+    if (!confirm('Are you sure you want to reset all participants\' drawn status?')) return;
     try {
       if (isDemoMode) {
         demoAPI.resetParticipants();
@@ -203,11 +206,26 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent 
   // Prize operations
   const handleSavePrize = async () => {
     try {
+      const weight = parseInt(prizeWeight);
+      const quantity = parseInt(prizeQuantity);
+      
+      // Validate weight
+      if (weight <= 0 || weight > 100) {
+        alert('Weight must be between 1-100');
+        return;
+      }
+      
+      // Validate quantity
+      if (quantity < 0) {
+        alert('Quantity must be 0 or greater');
+        return;
+      }
+      
       if (isDemoMode) {
         if (editingPrize) {
-          demoAPI.updatePrize(editingPrize.id, { name: prizeName, weight: parseInt(prizeWeight) });
+          demoAPI.updatePrize(editingPrize.id, { name: prizeName, weight, quantity });
         } else {
-          demoAPI.addPrize({ name: prizeName, weight: parseInt(prizeWeight) });
+          demoAPI.addPrize({ name: prizeName, weight, quantity });
         }
       } else {
         if (editingPrize) {
@@ -217,7 +235,7 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent 
               'Content-Type': 'application/json',
               Authorization: `Bearer ${accessToken}`
             },
-            body: JSON.stringify({ name: prizeName, weight: prizeWeight })
+            body: JSON.stringify({ name: prizeName, weight, quantity })
           });
         } else {
           await fetch(`${apiUrl}/prizes`, {
@@ -226,7 +244,7 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent 
               'Content-Type': 'application/json',
               Authorization: `Bearer ${accessToken}`
             },
-            body: JSON.stringify({ name: prizeName, weight: prizeWeight })
+            body: JSON.stringify({ name: prizeName, weight, quantity })
           });
         }
       }
@@ -235,11 +253,14 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent 
       fetchData();
     } catch (error) {
       console.error('Error saving prize:', error);
+      if (error instanceof Error) {
+        alert(error.message);
+      }
     }
   };
 
   const handleDeletePrize = async (id: string) => {
-    if (!confirm('Yakin ingin menghapus hadiah ini?')) return;
+    if (!confirm('Are you sure you want to delete this prize?')) return;
     try {
       if (isDemoMode) {
         demoAPI.deletePrize(id);
@@ -257,7 +278,8 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent 
 
   const resetPrizeForm = () => {
     setPrizeName('');
-    setPrizeWeight('1');
+    setPrizeWeight('10');
+    setPrizeQuantity('10');
     setEditingPrize(null);
   };
 
@@ -271,7 +293,7 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent 
           {isDemoMode && (
             <div className="mt-3 flex items-center gap-2 bg-green-500/20 border border-green-500/50 rounded-lg px-3 py-2">
               <Zap className="w-4 h-4 text-green-400" />
-              <span className="text-green-400 text-xs">Mode Demo</span>
+              <span className="text-green-400 text-xs">Demo Mode</span>
             </div>
           )}
         </div>
@@ -286,7 +308,7 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent 
             }`}
           >
             <Users className="w-5 h-5" />
-            <span>Kelola Peserta</span>
+            <span>Manage Participants</span>
           </button>
 
           <button
@@ -298,7 +320,7 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent 
             }`}
           >
             <Gift className="w-5 h-5" />
-            <span>Kelola Hadiah</span>
+            <span>Manage Prizes</span>
           </button>
 
           <button
@@ -310,16 +332,24 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent 
             }`}
           >
             <FileText className="w-5 h-5" />
-            <span>Log Event</span>
+            <span>Event Logs</span>
           </button>
 
-          <div className="pt-4 border-t border-slate-700">
+          <div className="pt-4 border-t border-slate-700 space-y-2">
             <button
               onClick={onViewEvent}
               className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700 transition-all"
             >
               <Monitor className="w-5 h-5" />
-              <span>Halaman Event</span>
+              <span>Prize Wheel Event</span>
+            </button>
+            
+            <button
+              onClick={onViewSlotSpin}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700 transition-all"
+            >
+              <Users className="w-5 h-5" />
+              <span>Slot Spin Event</span>
             </button>
           </div>
         </nav>
@@ -349,19 +379,19 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent 
               />
               <StatsCard
                 icon={CheckCircle}
-                label="Sudah Diundi"
+                label="Already Drawn"
                 value={participants.filter(p => p.drawn).length}
                 color="green"
               />
               <StatsCard
                 icon={XCircle}
-                label="Belum Diundi"
+                label="Not Yet Drawn"
                 value={participants.filter(p => !p.drawn).length}
                 color="blue"
               />
               <StatsCard
                 icon={Gift}
-                label="Total Hadiah"
+                label="Total Prizes"
                 value={prizes.length}
                 color="orange"
               />
@@ -369,61 +399,60 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent 
 
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h1 className="text-white mb-2">Daftar Peserta & Peluang Undian</h1>
-                <p className="text-slate-400">Kelola data peserta yang akan diundi</p>
+                <h1 className="text-white mb-2">Participant List & Draw Chances</h1>
+                <p className="text-slate-400">Manage participant data for the draw</p>
               </div>
               <div className="flex gap-3">
                 {participants.length === 0 && prizes.length === 0 && !isDemoMode && (
                   <SetupHelper accessToken={accessToken} isDemoMode={isDemoMode} onSetupComplete={fetchData} />
                 )}
-                <Dialog open={isParticipantDialogOpen} onOpenChange={setIsParticipantDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button
-                      onClick={() => {
-                        resetParticipantForm();
-                        setIsParticipantDialogOpen(true);
-                      }}
-                      className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Tambah Peserta
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="bg-slate-800 text-white border-slate-700">
-                    <DialogHeader>
-                      <DialogTitle>{editingParticipant ? 'Edit Peserta' : 'Tambah Peserta Baru'}</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div>
-                        <Label>Nama Peserta</Label>
-                        <Input
-                          value={participantName}
-                          onChange={(e) => setParticipantName(e.target.value)}
-                          placeholder="Masukkan nama peserta"
-                          className="bg-slate-900 border-slate-700 text-white"
-                        />
-                      </div>
-                      <div>
-                        <Label>Peluang (Jumlah Spin)</Label>
-                        <Input
-                          type="number"
-                          min="1"
-                          value={participantChances}
-                          onChange={(e) => setParticipantChances(e.target.value)}
-                          className="bg-slate-900 border-slate-700 text-white"
-                        />
-                      </div>
-                      <Button
-                        onClick={handleSaveParticipant}
-                        className="w-full bg-gradient-to-r from-purple-500 to-blue-500"
-                      >
-                        Simpan
-                      </Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
+                <Button
+                  onClick={() => {
+                    resetParticipantForm();
+                    setIsParticipantDialogOpen(true);
+                  }}
+                  className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Participant
+                </Button>
               </div>
             </div>
+
+            <Dialog open={isParticipantDialogOpen} onOpenChange={setIsParticipantDialogOpen}>
+              <DialogContent className="bg-slate-800 text-white border-slate-700">
+                <DialogHeader>
+                  <DialogTitle>{editingParticipant ? 'Edit Participant' : 'Add New Participant'}</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label>Participant Name</Label>
+                    <Input
+                      value={participantName}
+                      onChange={(e) => setParticipantName(e.target.value)}
+                      placeholder="Enter participant name"
+                      className="bg-slate-900 border-slate-700 text-white"
+                    />
+                  </div>
+                  <div>
+                    <Label>Chances (Number of Spins)</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      value={participantChances}
+                      onChange={(e) => setParticipantChances(e.target.value)}
+                      className="bg-slate-900 border-slate-700 text-white"
+                    />
+                  </div>
+                  <Button
+                    onClick={handleSaveParticipant}
+                    className="w-full bg-gradient-to-r from-purple-500 to-blue-500"
+                  >
+                    Save
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
 
             <div className="mb-4">
               <Button
@@ -432,7 +461,7 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent 
                 className="bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/50"
               >
                 <RotateCcw className="w-4 h-4 mr-2" />
-                Reset Undian (Bersihkan Status Drawn)
+                Reset Draw (Clear Drawn Status)
               </Button>
             </div>
 
@@ -442,17 +471,17 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent 
                   <thead className="bg-slate-700/50">
                     <tr>
                       <th className="px-6 py-4 text-left text-slate-300">ID</th>
-                      <th className="px-6 py-4 text-left text-slate-300">Nama Peserta</th>
-                      <th className="px-6 py-4 text-left text-slate-300">Peluang (x)</th>
+                      <th className="px-6 py-4 text-left text-slate-300">Participant Name</th>
+                      <th className="px-6 py-4 text-left text-slate-300">Chances (x)</th>
                       <th className="px-6 py-4 text-left text-slate-300">Status</th>
-                      <th className="px-6 py-4 text-left text-slate-300">Aksi</th>
+                      <th className="px-6 py-4 text-left text-slate-300">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-700">
                     {participants.length === 0 ? (
                       <tr>
                         <td colSpan={5} className="px-6 py-8 text-center text-slate-400">
-                          Belum ada peserta. Klik tombol "Tambah Peserta" untuk memulai.
+                          No participants yet. Click &quot;Add Participant&quot; button to start.
                         </td>
                       </tr>
                     ) : (
@@ -507,58 +536,84 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent 
           <div>
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h1 className="text-white mb-2">Kelola Hadiah</h1>
-                <p className="text-slate-400">Atur hadiah dan bobot peluangnya</p>
+                <h1 className="text-white mb-2">Manage Prizes</h1>
+                <p className="text-slate-400">Set prizes, weight (probability), and quantity</p>
               </div>
-              <Dialog open={isPrizeDialogOpen} onOpenChange={setIsPrizeDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button
-                    onClick={() => {
-                      resetPrizeForm();
-                      setIsPrizeDialogOpen(true);
-                    }}
-                    className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Tambah Hadiah
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="bg-slate-800 text-white border-slate-700">
-                  <DialogHeader>
-                    <DialogTitle>{editingPrize ? 'Edit Hadiah' : 'Tambah Hadiah Baru'}</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <Label>Nama Hadiah</Label>
-                      <Input
-                        value={prizeName}
-                        onChange={(e) => setPrizeName(e.target.value)}
-                        placeholder="Contoh: Smartphone"
-                        className="bg-slate-900 border-slate-700 text-white"
-                      />
-                    </div>
-                    <div>
-                      <Label>Bobot (Weight)</Label>
-                      <Input
-                        type="number"
-                        min="1"
-                        value={prizeWeight}
-                        onChange={(e) => setPrizeWeight(e.target.value)}
-                        className="bg-slate-900 border-slate-700 text-white"
-                      />
-                      <p className="text-slate-400 text-sm mt-1">
-                        Semakin besar bobot, semakin besar peluang hadiah keluar
-                      </p>
-                    </div>
-                    <Button
-                      onClick={handleSavePrize}
-                      className="w-full bg-gradient-to-r from-purple-500 to-blue-500"
-                    >
-                      Simpan
-                    </Button>
+              <Button
+                onClick={() => {
+                  resetPrizeForm();
+                  setIsPrizeDialogOpen(true);
+                }}
+                className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Prize
+              </Button>
+            </div>
+
+            <Dialog open={isPrizeDialogOpen} onOpenChange={setIsPrizeDialogOpen}>
+              <DialogContent className="bg-slate-800 text-white border-slate-700">
+                <DialogHeader>
+                  <DialogTitle>{editingPrize ? 'Edit Prize' : 'Add New Prize'}</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label>Prize Name</Label>
+                    <Input
+                      value={prizeName}
+                      onChange={(e) => setPrizeName(e.target.value)}
+                      placeholder="e.g., Smartphone"
+                      className="bg-slate-900 border-slate-700 text-white"
+                    />
                   </div>
-                </DialogContent>
-              </Dialog>
+                  <div>
+                    <Label>Weight (Probability)</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      max="100"
+                      value={prizeWeight}
+                      onChange={(e) => setPrizeWeight(e.target.value)}
+                      className="bg-slate-900 border-slate-700 text-white"
+                    />
+                    <p className="text-slate-400 text-sm mt-1">
+                      Weight 1-100. Higher weight = higher probability.
+                    </p>
+                  </div>
+                  <div>
+                    <Label>Quantity (Stock Available)</Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      value={prizeQuantity}
+                      onChange={(e) => setPrizeQuantity(e.target.value)}
+                      className="bg-slate-900 border-slate-700 text-white"
+                    />
+                    <p className="text-slate-400 text-sm mt-1">
+                      Number of prizes available. When 0, prize won't appear in wheel.
+                    </p>
+                  </div>
+                  <Button
+                    onClick={handleSavePrize}
+                    className="w-full bg-gradient-to-r from-purple-500 to-blue-500"
+                  >
+                    Save
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            {/* Total Weight Info */}
+            <div className="mb-4 p-4 bg-slate-800 rounded-xl border border-slate-700">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-400">Total Weight:</span>
+                <span className="text-xl text-blue-400">
+                  {prizes.reduce((sum, p) => sum + p.weight, 0)}
+                </span>
+              </div>
+              <p className="text-slate-400 text-sm mt-2">
+                💡 Total weight is used for probability calculation. Doesn't need to equal 100.
+              </p>
             </div>
 
             <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
@@ -567,47 +622,60 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent 
                   <thead className="bg-slate-700/50">
                     <tr>
                       <th className="px-6 py-4 text-left text-slate-300">ID</th>
-                      <th className="px-6 py-4 text-left text-slate-300">Nama Hadiah</th>
-                      <th className="px-6 py-4 text-left text-slate-300">Bobot</th>
-                      <th className="px-6 py-4 text-left text-slate-300">Aksi</th>
+                      <th className="px-6 py-4 text-left text-slate-300">Prize Name</th>
+                      <th className="px-6 py-4 text-left text-slate-300">Weight</th>
+                      <th className="px-6 py-4 text-left text-slate-300">Quantity</th>
+                      <th className="px-6 py-4 text-left text-slate-300">Probability</th>
+                      <th className="px-6 py-4 text-left text-slate-300">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-700">
                     {prizes.length === 0 ? (
                       <tr>
-                        <td colSpan={4} className="px-6 py-8 text-center text-slate-400">
-                          Belum ada hadiah. Klik tombol "Tambah Hadiah" untuk memulai.
+                        <td colSpan={6} className="px-6 py-8 text-center text-slate-400">
+                          No prizes yet. Click &quot;Add Prize&quot; button to start.
                         </td>
                       </tr>
                     ) : (
-                      prizes.map((prize) => (
-                        <tr key={prize.id} className="hover:bg-slate-700/30 transition-colors">
-                          <td className="px-6 py-4 text-slate-400 text-sm">{prize.id.slice(0, 8)}</td>
-                          <td className="px-6 py-4 text-white">{prize.name}</td>
-                          <td className="px-6 py-4 text-white">{prize.weight}</td>
-                          <td className="px-6 py-4">
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => {
-                                  setEditingPrize(prize);
-                                  setPrizeName(prize.name);
-                                  setPrizeWeight(prize.weight.toString());
-                                  setIsPrizeDialogOpen(true);
-                                }}
-                                className="p-2 hover:bg-slate-600 rounded-lg transition-colors"
-                              >
-                                <Edit className="w-4 h-4 text-blue-400" />
-                              </button>
-                              <button
-                                onClick={() => handleDeletePrize(prize.id)}
-                                className="p-2 hover:bg-slate-600 rounded-lg transition-colors"
-                              >
-                                <Trash2 className="w-4 h-4 text-red-400" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
+                      prizes.map((prize) => {
+                        const totalWeight = prizes.reduce((sum, p) => sum + p.weight, 0);
+                        const probability = ((prize.weight / totalWeight) * 100).toFixed(1);
+                        return (
+                          <tr key={prize.id} className="hover:bg-slate-700/30 transition-colors">
+                            <td className="px-6 py-4 text-slate-400 text-sm">{prize.id.slice(0, 8)}</td>
+                            <td className="px-6 py-4 text-white">{prize.name}</td>
+                            <td className="px-6 py-4 text-white">{prize.weight}</td>
+                            <td className="px-6 py-4">
+                              <span className={`${prize.quantity === 0 ? 'text-red-400' : 'text-cyan-400'}`}>
+                                {prize.quantity}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 text-green-400">{probability}%</td>
+                            <td className="px-6 py-4">
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => {
+                                    setEditingPrize(prize);
+                                    setPrizeName(prize.name);
+                                    setPrizeWeight(prize.weight.toString());
+                                    setPrizeQuantity(prize.quantity.toString());
+                                    setIsPrizeDialogOpen(true);
+                                  }}
+                                  className="p-2 hover:bg-slate-600 rounded-lg transition-colors"
+                                >
+                                  <Edit className="w-4 h-4 text-blue-400" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeletePrize(prize.id)}
+                                  className="p-2 hover:bg-slate-600 rounded-lg transition-colors"
+                                >
+                                  <Trash2 className="w-4 h-4 text-red-400" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
                     )}
                   </tbody>
                 </table>
@@ -619,15 +687,15 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent 
         {activeTab === 'logs' && (
           <div>
             <div className="mb-6">
-              <h1 className="text-white mb-2">Log Event</h1>
-              <p className="text-slate-400">Riwayat undian yang telah dilakukan</p>
+              <h1 className="text-white mb-2">Event Logs</h1>
+              <p className="text-slate-400">History of draws conducted</p>
             </div>
 
             <div className="space-y-4">
               {logs.length === 0 ? (
                 <div className="bg-slate-800 rounded-xl border border-slate-700 p-12 text-center">
                   <FileText className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-                  <p className="text-slate-400">Belum ada log event</p>
+                  <p className="text-slate-400">No event logs yet</p>
                 </div>
               ) : (
                 logs.map((log) => (
@@ -636,7 +704,7 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent 
                       <div>
                         <h3 className="text-white mb-1">{log.participantName}</h3>
                         <p className="text-slate-400 text-sm">
-                          {new Date(log.timestamp).toLocaleString('id-ID')}
+                          {new Date(log.timestamp).toLocaleString('en-US')}
                         </p>
                       </div>
                     </div>
