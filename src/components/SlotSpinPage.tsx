@@ -29,11 +29,26 @@ export function SlotSpinPage({ isDemoMode, onBack }: SlotSpinPageProps) {
   const animationRef = useRef<number | null>(null);
   const selectedIndexRef = useRef<number | null>(null);
   const finalSlotPositionRef = useRef<number>(0);
+
+  // 🔊 Audio Refs
+  const spinSound = useRef<HTMLAudioElement | null>(null);
+  const winSound = useRef<HTMLAudioElement | null>(null);
+
   const apiUrl = `https://${projectId}.supabase.co/functions/v1/make-server-c461e4cf`;
 
-  const itemHeight = 96; // 1 item = 96px (h-24)
-  const containerHeight = 320; // tinggi container = 320px (h-80)
+  // 📏 Slot size untuk 1 baris
+  const itemHeight = 96; // h-24
+  const containerHeight = 96; // satu baris saja!
 
+  // 🎵 Init sounds
+  useEffect(() => {
+    spinSound.current = new Audio("/sounds/spin.mp3");
+    winSound.current = new Audio("/sounds/win.mp3");
+    spinSound.current.volume = 0.4;
+    winSound.current.volume = 0.7;
+  }, []);
+
+  // 🔁 Fetch data
   useEffect(() => {
     fetchParticipants();
     return () => {
@@ -52,11 +67,19 @@ export function SlotSpinPage({ isDemoMode, onBack }: SlotSpinPageProps) {
           headers: { Authorization: `Bearer ${publicAnonKey}` },
         });
         const data = await res.json();
-        setParticipants((data.participants || []).filter((p: Participant) => !p.drawn));
+        setParticipants(
+          (data.participants || []).filter((p: Participant) => !p.drawn)
+        );
       }
     } catch (error) {
       console.error("Error fetching participants:", error);
     }
+  };
+
+  // Normalize pos agar tidak drift
+  const normalizeSlotPos = (pos: number, totalItems: number) => {
+    if (totalItems === 0) return 0;
+    return pos % totalItems;
   };
 
   const handleSpin = () => {
@@ -69,31 +92,32 @@ export function SlotSpinPage({ isDemoMode, onBack }: SlotSpinPageProps) {
     setShowResult(false);
     setSelectedParticipant(null);
 
-    const randomIndex = Math.floor(Math.random() * participants.length);
+    const totalItems = participants.length;
+    const normalizedStart = normalizeSlotPos(slotPos, totalItems);
+    const randomIndex = Math.floor(Math.random() * totalItems);
     selectedIndexRef.current = randomIndex;
     const selected = participants[randomIndex];
 
-    console.log("🎰 Selected participant:", selected.name, "at index:", randomIndex);
-
     let startTime: number | null = null;
-    const duration = 4000; // 4s
-    const baseRotations = 5; // minimal 5 putaran
-    const totalItems = participants.length;
-    const startPos = slotPos;
-    const finalSlotPosition = startPos + baseRotations * totalItems + randomIndex;
+    const duration = 4000;
+    const baseRotations = 6;
+    const finalSlotPosition =
+      normalizedStart + baseRotations * totalItems + randomIndex;
     finalSlotPositionRef.current = finalSlotPosition;
 
     const animate = (timestamp: number) => {
       if (!startTime) {
         startTime = timestamp;
         setIsSpinning(true);
+        spinSound.current?.play().catch(() => {});
       }
 
       const elapsed = timestamp - startTime;
       const progress = Math.min(elapsed / duration, 1);
       const easeOut = 1 - Math.pow(1 - progress, 3);
 
-      const currentPos = startPos + easeOut * (finalSlotPosition - startPos);
+      const currentPos =
+        normalizedStart + easeOut * (finalSlotPosition - normalizedStart);
       setSlotPos(currentPos);
 
       if (progress < 1) {
@@ -103,6 +127,9 @@ export function SlotSpinPage({ isDemoMode, onBack }: SlotSpinPageProps) {
         setIsSpinning(false);
         setSelectedParticipant(selected);
         animationRef.current = null;
+
+        spinSound.current?.pause();
+        winSound.current?.play().catch(() => {});
         setTimeout(() => setShowResult(true), 500);
       }
     };
@@ -111,44 +138,43 @@ export function SlotSpinPage({ isDemoMode, onBack }: SlotSpinPageProps) {
   };
 
   const handleReset = () => {
+    setSlotPos(0);
     setShowResult(false);
     setSelectedParticipant(null);
+
     if (selectedParticipant) {
-      setParticipants((prev) => prev.filter((p) => p.id !== selectedParticipant.id));
+      setParticipants((prev) =>
+        prev.filter((p) => p.id !== selectedParticipant.id)
+      );
     }
   };
 
+  // 🔄 Slot transform
   const totalRepeatedItems = participants.length > 0 ? participants.length * 3 : 1;
-
-  // 🧮 Hitung offset agar item pemenang selalu di tengah
   const finalOffset = (slotPos % totalRepeatedItems) * itemHeight;
   const slotTransformStyle = {
-    transform: `translateY(calc(-${finalOffset}px + ${containerHeight / 2}px - ${
-      itemHeight / 2
-    }px))`,
+    transform: `translateY(calc(-${finalOffset}px + ${
+      containerHeight / 2
+    }px - ${itemHeight / 2}px))`,
     transition: isSpinning ? "none" : "transform 0.3s ease-out",
   };
 
-  // 🔍 Tentukan siapa yang sedang terlihat di tengah slot
-  const currentVisibleName = (() => {
-    if (participants.length === 0) return "";
-    const index = Math.round(slotPos) % participants.length;
-    return participants[index]?.name || "";
-  })();
-
+  // ===============================
+  // 🎨 UI
+  // ===============================
   return (
     <div
       className="min-h-screen relative overflow-hidden"
       style={{
         backgroundImage: `url(${bgImage})`,
         backgroundSize: "cover",
-        backgroundPosition: "center",
+        backgroundPosition: "center top",
         backgroundRepeat: "no-repeat",
       }}
     >
       <div className="absolute inset-0 bg-black/40"></div>
 
-      {/* Header */}
+      {/* HEADER */}
       <div className="relative z-10 p-6 flex items-center justify-between">
         <Button
           onClick={onBack}
@@ -177,14 +203,15 @@ export function SlotSpinPage({ isDemoMode, onBack }: SlotSpinPageProps) {
         </Button>
       </div>
 
-      {/* Main Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-[calc(100vh-120px)] p-8">
-        {/* Slot Machine */}
-        <div className="mb-12">
+      {/* MAIN CONTENT */}
+      <div className="relative z-10 flex flex-col items-center justify-start min-h-[calc(100vh-120px)] p-8 mt-28">
+        
+        {/* SLOT BOX - Dengan wrapper transparan */}
+        <div className="mb-12 bg-black/10 backdrop-blur-sm rounded-[4rem] p-4"> 
           <div className="bg-gradient-to-b from-yellow-600 via-yellow-500 to-yellow-600 rounded-3xl p-12 shadow-2xl border-8 border-yellow-700">
             <div className="bg-slate-900 rounded-2xl p-8 shadow-inner">
               <div className="flex flex-col items-center mb-6">
-                <div className="relative w-96 h-80 bg-white rounded-xl overflow-hidden shadow-xl border-4 border-slate-800">
+                <div className="relative w-96 h-24 bg-white rounded-xl overflow-hidden shadow-xl border-4 border-slate-800">
                   <div className="absolute inset-0 flex flex-col">
                     <div className="absolute w-full" style={slotTransformStyle}>
                       {participants.length > 0 ? (
@@ -194,7 +221,8 @@ export function SlotSpinPage({ isDemoMode, onBack }: SlotSpinPageProps) {
                           .map((p, idx) => (
                             <div
                               key={`${p.id}-${idx}`}
-                              className="h-24 flex items-center justify-center px-6 border-b border-slate-200 bg-white"
+                              // WARNA SLOT DIUBAH MENJADI TRANSPARAN
+                              className="h-24 flex items-center justify-center px-6 border-b border-slate-200 bg-white/30 backdrop-blur-sm"
                             >
                               <span className="text-3xl font-bold truncate max-w-full text-center text-black">
                                 {p.name}
@@ -202,25 +230,19 @@ export function SlotSpinPage({ isDemoMode, onBack }: SlotSpinPageProps) {
                             </div>
                           ))
                       ) : (
-                        <div className="h-80 flex items-center justify-center bg-white">
+                        <div className="h-24 flex items-center justify-center bg-white/30 backdrop-blur-sm">
                           <span className="text-3xl font-bold text-slate-400">
-                            {isSpinning
-                              ? "Spinning..."
-                              : currentVisibleName || "No participants"}
+                            No participants
                           </span>
                         </div>
                       )}
                     </div>
                   </div>
-
-                  {/* Overlay markers */}
+                  {/* Marker tengah */}
                   <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-24 border-y-4 border-red-500 pointer-events-none"></div>
-                  <div className="absolute top-0 inset-x-0 h-24 bg-gradient-to-b from-white/90 to-transparent pointer-events-none"></div>
-                  <div className="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-white/90 to-transparent pointer-events-none"></div>
                 </div>
               </div>
 
-              {/* Info */}
               <div className="text-center text-yellow-400 mb-2">
                 {participants.length} participant
                 {participants.length !== 1 ? "s" : ""} remaining
@@ -234,7 +256,7 @@ export function SlotSpinPage({ isDemoMode, onBack }: SlotSpinPageProps) {
           </div>
         </div>
 
-        {/* Buttons */}
+        {/* BUTTONS */}
         <div className="flex gap-4 mb-8">
           {!showResult && (
             <Button
@@ -267,12 +289,12 @@ export function SlotSpinPage({ isDemoMode, onBack }: SlotSpinPageProps) {
           )}
         </div>
 
-        {/* Result Overlay */}
+        {/* RESULT OVERLAY - DIBUAT LEBIH TRANSPARAN */}
         {showResult && selectedParticipant && (
           <div className="animate-in fade-in zoom-in duration-500">
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-3xl blur-2xl opacity-60 animate-pulse"></div>
-              <div className="relative bg-gradient-to-r from-yellow-500/30 to-orange-500/30 backdrop-blur-xl rounded-3xl border-4 border-yellow-500/80 px-20 py-12 shadow-2xl">
+              {/* <div className="absolute inset-0 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-3xl blur-2xl opacity-60 animate-pulse"></div> */}
+              <div className="relative bg-gradient-to-r from-yellow-500/10 to-orange-500/10 backdrop-blur-lg rounded-3xl border-4 border-yellow-500/80 px-20 py-12 shadow-2xl">
                 <div className="text-center">
                   <p className="text-yellow-300 mb-4 tracking-wider uppercase text-xl">
                     🎉 Selected Participant 🎉
@@ -280,23 +302,13 @@ export function SlotSpinPage({ isDemoMode, onBack }: SlotSpinPageProps) {
                   <h1 className="text-white mb-2 animate-pulse text-6xl font-bold drop-shadow-lg">
                     {selectedParticipant.name}
                   </h1>
-                  <p className="text-yellow-200 text-lg mt-4">
+                  {/* <p className="text-yellow-200 text-lg mt-4">
                     {selectedParticipant.chances} spin
                     {selectedParticipant.chances > 1 ? "s" : ""} available
-                  </p>
+                  </p> */}
                 </div>
               </div>
             </div>
-          </div>
-        )}
-
-        {/* Empty State */}
-        {participants.length === 0 && !isSpinning && !showResult && (
-          <div className="text-center bg-slate-900/80 backdrop-blur-sm rounded-2xl px-12 py-8 border-2 border-slate-700 mt-8">
-            <p className="text-white text-xl">No participants available</p>
-            <p className="text-slate-400 mt-2">
-              Please add participants in the dashboard
-            </p>
           </div>
         )}
       </div>
