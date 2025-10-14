@@ -4,6 +4,7 @@ interface Prize {
   id: string;
   name: string;
   weight: number;
+  quantity: number;
 }
 
 interface SpinningWheelProps {
@@ -28,6 +29,9 @@ export function SpinningWheel({
   size = 'large' 
 }: SpinningWheelProps) {
     
+  // Filter out prizes with quantity = 0
+  const availablePrizes = prizes.filter(p => p.quantity > 0);
+  
   // --- KONSTANTA UKURAN ---
   const sizeMap = {
     small: 300,
@@ -38,9 +42,9 @@ export function SpinningWheel({
   const pointerSize = wheelSize * 0.05;
   const pointerHeight = wheelSize * 0.06;
   
-  const numPrizes = prizes.length;
+  const numPrizes = availablePrizes.length;
   // Sudut per segmen (dalam derajat) - Semua segmen sama besar
-  const segmentAngle = 360 / numPrizes;
+  const segmentAngle = numPrizes > 0 ? 360 / numPrizes : 360;
 
   // State untuk mengontrol rotasi visual (derajat) - AKUMULATIF
   const [rotationDegrees, setRotationDegrees] = React.useState(0);
@@ -54,8 +58,13 @@ export function SpinningWheel({
     // Pastikan kita hanya beroperasi saat sedang spin dan hadiah sudah dipilih
     if (!isSpinning || !selectedPrize || isTransitioningRef.current) return;
     
-    const targetIndex = prizes.findIndex(p => p.id === selectedPrize.id);
-    if (targetIndex === -1) return;
+    const targetIndex = availablePrizes.findIndex(p => p.id === selectedPrize.id);
+    if (targetIndex === -1) {
+      console.error('Selected prize not found in available prizes!');
+      return;
+    }
+
+    console.log('🎯 Starting spin animation for:', selectedPrize.name, 'at index:', targetIndex);
 
     // **********************************************
     // PERBAIKAN LOGIKA AKUMULASI ROTASI (DARI POSISI SEKARANG)
@@ -91,6 +100,11 @@ export function SpinningWheel({
     // Penambahan 360 memastikan delta selalu positif (roda berputar CW maju)
     const finalRotationDelta = (absoluteTargetRotation - currentNormalizedRotation) + 360; 
     
+    console.log('📐 Target index:', targetIndex);
+    console.log('📐 Center angle from start:', centerAngleFromStart);
+    console.log('📐 Degrees to target:', degreesToTarget);
+    console.log('📐 Final rotation delta:', finalRotationDelta);
+    
     // **********************************************
 
     isTransitioningRef.current = true;
@@ -98,12 +112,14 @@ export function SpinningWheel({
     // Atur rotasi baru: Posisi saat ini + Delta
     setRotationDegrees(prev => prev + finalRotationDelta);
 
-  }, [isSpinning, selectedPrize, prizes, segmentAngle, rotationDegrees]);
+  }, [isSpinning, selectedPrize, availablePrizes, segmentAngle, rotationDegrees]);
 
   // --- HANDLER PENYELESAIAN ANIMASI CSS ---
   const handleTransitionEnd = () => {
     if (isSpinning && selectedPrize) {
       isTransitioningRef.current = false;
+      
+      console.log('✅ Animation complete. Prize:', selectedPrize.name);
       
       // Normalisasi nilai rotasi untuk menghindari angka besar
       const normalizedRotation = rotationDegrees % 360;
@@ -116,19 +132,19 @@ export function SpinningWheel({
   };
 
   // --- Render Kosong ---
-  if (prizes.length === 0) {
+  if (availablePrizes.length === 0) {
     return (
         <div 
             style={{ width: wheelSize, height: wheelSize }}
             className="rounded-full bg-slate-800 flex items-center justify-center text-white border-4 border-slate-700 shadow-xl"
         >
-            Tambahkan Hadiah
+            Add Prizes
         </div>
     );
   }
   
   // --- RENDERING RODA UTAMA (MENGGUNAKAN CSS CONIC-GRADIENT) ---
-  const conicGradient = prizes.map((p, index) => {
+  const conicGradient = availablePrizes.map((p, index) => {
       const start = index * segmentAngle;
       const end = (index + 1) * segmentAngle;
       const color = solidColors[index % solidColors.length];
@@ -171,7 +187,7 @@ export function SpinningWheel({
             `}
         >
             {/* Prize Labels */}
-            {prizes.map((prize, index) => {
+            {availablePrizes.map((prize, index) => {
                 // Sudut untuk teks (Pusat segmen dari posisi Jam 12)
                 const angle = index * segmentAngle + (segmentAngle / 2);
                 
