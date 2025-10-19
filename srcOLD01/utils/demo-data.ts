@@ -33,8 +33,7 @@ export const DEMO_LOGS: any[] = [];
 const STORAGE_KEYS = {
   participants: 'demo_participants',
   prizes: 'demo_prizes',
-  logs: 'demo_logs',
-  slotLogs: 'demo_slot_logs'
+  logs: 'demo_logs'
 };
 
 // Initialize demo data in localStorage
@@ -47,9 +46,6 @@ export function initializeDemoData() {
   }
   if (!localStorage.getItem(STORAGE_KEYS.logs)) {
     localStorage.setItem(STORAGE_KEYS.logs, JSON.stringify(DEMO_LOGS));
-  }
-  if (!localStorage.getItem(STORAGE_KEYS.slotLogs)) {
-    localStorage.setItem(STORAGE_KEYS.slotLogs, JSON.stringify([]));
   }
 }
 
@@ -84,7 +80,6 @@ export const demoAPI = {
     }
     return null;
   },
-  
 
   deleteParticipant: (id: string) => {
     const participants = demoAPI.getParticipants();
@@ -193,29 +188,10 @@ export const demoAPI = {
     return logs.sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
   },
 
-  // Slot Spin Logs
-  saveSlotSpinLog: (logEntry: any) => {
-    const logs = demoAPI.getSlotSpinLogs();
-    logs.push(logEntry);
-    localStorage.setItem(STORAGE_KEYS.slotLogs, JSON.stringify(logs));
-    return logEntry;
-  },
-
-  getSlotSpinLogs: () => {
-    const data = localStorage.getItem(STORAGE_KEYS.slotLogs);
-    const logs = JSON.parse(data || '[]');
-    return logs.sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-  },
-
-  clearSlotSpinLogs: () => {
-    localStorage.setItem(STORAGE_KEYS.slotLogs, JSON.stringify([]));
-  },
-
   // Reset all demo data
   resetAllData: () => {
     localStorage.setItem(STORAGE_KEYS.participants, JSON.stringify(DEMO_PARTICIPANTS));
     localStorage.setItem(STORAGE_KEYS.prizes, JSON.stringify(DEMO_PRIZES));
     localStorage.setItem(STORAGE_KEYS.logs, JSON.stringify([]));
-    localStorage.setItem(STORAGE_KEYS.slotLogs, JSON.stringify([]));
   }
 };

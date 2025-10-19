@@ -5,8 +5,7 @@ import { EventPage } from './components/EventPage';
 import { EventResults } from './components/EventResults';
 import { SlotSpinPage } from './components/SlotSpinPage';
 import { supabase } from './utils/supabase/client';
-import { projectId, publicAnonKey } from './utils/supabase/info';
-import { Toaster } from './components/ui/sonner';
+import { projectId } from './utils/supabase/info';
 import './utils/setup-admin';
 
 type AppView = 'login' | 'dashboard' | 'event' | 'results' | 'slot-spin';
@@ -116,13 +115,6 @@ export default function App() {
 
   return (
     <div className="dark">
-      <Toaster 
-        position="top-right"
-        theme="dark"
-        richColors
-        closeButton
-      />
-      
       {view === 'login' && <AdminLogin onLoginSuccess={handleLoginSuccess} />}
       
       {view === 'dashboard' && (

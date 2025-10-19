@@ -112,7 +112,7 @@ app.put(`${PREFIX}/participants/:id`, async (c) => {
     }
 
     const id = c.req.param('id');
-    const { name, chances, drawn } = await c.req.json();
+    const { name, chances } = await c.req.json();
     
     const existing = await kv.get(`participant:${id}`);
     if (!existing) {
@@ -123,7 +123,6 @@ app.put(`${PREFIX}/participants/:id`, async (c) => {
       ...existing,
       name: name || existing.name,
       chances: chances !== undefined ? parseInt(chances) : existing.chances,
-      drawn: drawn !== undefined ? drawn : existing.drawn,
       updatedAt: new Date().toISOString()
     };
 
@@ -211,7 +210,7 @@ app.post(`${PREFIX}/prizes`, async (c) => {
       return c.json({ error: 'Unauthorized' }, 401);
     }
 
-    const { name, weight, quantity } = await c.req.json();
+    const { name, weight } = await c.req.json();
     
     if (!name || !weight) {
       return c.json({ error: 'Name and weight are required' }, 400);
@@ -228,7 +227,6 @@ app.post(`${PREFIX}/prizes`, async (c) => {
       id,
       name,
       weight: weightNum,
-      quantity: quantity !== undefined ? parseInt(quantity) : 1,
       createdAt: new Date().toISOString()
     };
 
@@ -251,7 +249,7 @@ app.put(`${PREFIX}/prizes/:id`, async (c) => {
     }
 
     const id = c.req.param('id');
-    const { name, weight, quantity } = await c.req.json();
+    const { name, weight } = await c.req.json();
     
     const existing = await kv.get(`prize:${id}`);
     if (!existing) {
@@ -270,7 +268,6 @@ app.put(`${PREFIX}/prizes/:id`, async (c) => {
       ...existing,
       name: name || existing.name,
       weight: weight !== undefined ? parseInt(weight) : existing.weight,
-      quantity: quantity !== undefined ? parseInt(quantity) : existing.quantity,
       updatedAt: new Date().toISOString()
     };
 
@@ -337,10 +334,8 @@ app.post(`${PREFIX}/event/spin`, async (c) => {
       return c.json({ error: 'Participant not found' }, 404);
     }
 
-    // Get all prizes with quantity > 0
-    const allPrizes = await kv.getByPrefix('prize:');
-    const prizes = allPrizes.filter(p => (p.quantity || 0) > 0);
-    
+    // Get all prizes
+    const prizes = await kv.getByPrefix('prize:');
     if (prizes.length === 0) {
       return c.json({ error: 'No prizes available' }, 400);
     }
@@ -403,7 +398,7 @@ app.post(`${PREFIX}/event/complete`, async (c) => {
   }
 });
 
-// Get event logs (Prize Wheel)
+// Get event logs
 app.get(`${PREFIX}/event/logs`, async (c) => {
   try {
     const accessToken = c.req.header('Authorization')?.split(' ')[1];
@@ -421,88 +416,6 @@ app.get(`${PREFIX}/event/logs`, async (c) => {
   } catch (error) {
     console.log(`Error getting logs: ${error}`);
     return c.json({ error: 'Failed to get logs' }, 500);
-  }
-});
-
-// ============ SLOT SPIN ROUTES ============
-
-// Save slot spin result
-app.post(`${PREFIX}/slot-spin/save`, async (c) => {
-  try {
-    const accessToken = c.req.header('Authorization')?.split(' ')[1];
-    const { data: { user }, error: authError } = await supabase.auth.getUser(accessToken);
-    
-    if (!user?.id) {
-      return c.json({ error: 'Unauthorized' }, 401);
-    }
-
-    const { participantId, participantName, prizeId, prizeName, mode } = await c.req.json();
-    
-    if (!participantId || !participantName || !prizeId || !prizeName) {
-      return c.json({ error: 'Missing required fields' }, 400);
-    }
-
-    const logId = crypto.randomUUID();
-    const logEntry = {
-      id: logId,
-      participantId,
-      participantName,
-      prizeId,
-      prizeName,
-      mode: mode || 'random', // 'random' or 'pre-selected'
-      timestamp: new Date().toISOString()
-    };
-
-    await kv.set(`slot-log:${logId}`, logEntry);
-    return c.json({ success: true, log: logEntry });
-  } catch (error) {
-    console.log(`Error saving slot spin: ${error}`);
-    return c.json({ error: 'Failed to save slot spin' }, 500);
-  }
-});
-
-// Get slot spin logs
-app.get(`${PREFIX}/slot-spin/logs`, async (c) => {
-  try {
-    const accessToken = c.req.header('Authorization')?.split(' ')[1];
-    const { data: { user }, error: authError } = await supabase.auth.getUser(accessToken);
-    
-    if (!user?.id) {
-      return c.json({ error: 'Unauthorized' }, 401);
-    }
-
-    const logs = await kv.getByPrefix('slot-log:');
-    // Sort by timestamp descending
-    logs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-    
-    return c.json({ logs: logs || [] });
-  } catch (error) {
-    console.log(`Error getting slot spin logs: ${error}`);
-    return c.json({ error: 'Failed to get slot spin logs' }, 500);
-  }
-});
-
-// Clear all slot spin logs
-app.delete(`${PREFIX}/slot-spin/logs`, async (c) => {
-  try {
-    const accessToken = c.req.header('Authorization')?.split(' ')[1];
-    const { data: { user }, error: authError } = await supabase.auth.getUser(accessToken);
-    
-    if (!user?.id) {
-      return c.json({ error: 'Unauthorized' }, 401);
-    }
-
-    const logs = await kv.getByPrefix('slot-log:');
-    const logKeys = logs.map((log) => `slot-log:${log.id}`);
-    
-    if (logKeys.length > 0) {
-      await kv.mdel(logKeys);
-    }
-    
-    return c.json({ success: true, deletedCount: logKeys.length });
-  } catch (error) {
-    console.log(`Error clearing slot spin logs: ${error}`);
-    return c.json({ error: 'Failed to clear slot spin logs' }, 500);
   }
 });
 

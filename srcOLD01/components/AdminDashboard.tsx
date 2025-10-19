@@ -1,15 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Users, Gift, FileText, Monitor, LogOut, Upload, Plus, Edit, Trash2, RotateCcw, CheckCircle, XCircle, Zap, Trophy, Download, Trash } from 'lucide-react';
+import { Users, Gift, FileText, Monitor, LogOut, Upload, Plus, Edit, Trash2, RotateCcw, CheckCircle, XCircle, Zap, Trophy } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 import { SetupHelper } from './SetupHelper';
 import { StatsCard } from './StatsCard';
 import { projectId, publicAnonKey } from '../utils/supabase/info';
 import { demoAPI } from '../utils/demo-data';
-import { toast } from 'sonner';
 
 interface Participant {
   id: string;
@@ -41,11 +39,10 @@ interface AdminDashboardProps {
 }
 
 export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent, onViewSlotSpin }: AdminDashboardProps) {
-  const [activeTab, setActiveTab] = useState<'participants' | 'prizes' | 'logs' | 'slot-logs'>('participants');
+  const [activeTab, setActiveTab] = useState<'participants' | 'prizes' | 'logs'>('participants');
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [prizes, setPrizes] = useState<Prize[]>([]);
   const [logs, setLogs] = useState<EventLog[]>([]);
-  const [slotLogs, setSlotLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
   // Participant form state
@@ -98,8 +95,6 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent,
           setPrizes(demoAPI.getPrizes());
         } else if (activeTab === 'logs') {
           setLogs(demoAPI.getLogs());
-        } else if (activeTab === 'slot-logs') {
-          setSlotLogs(demoAPI.getSlotSpinLogs());
         }
       } else {
         // Use API
@@ -121,12 +116,6 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent,
           });
           const data = await res.json();
           setLogs(data.logs || []);
-        } else if (activeTab === 'slot-logs') {
-          const res = await fetch(`${apiUrl}/slot-spin/logs`, {
-            headers: { Authorization: `Bearer ${accessToken}` }
-          });
-          const data = await res.json();
-          setSlotLogs(data.logs || []);
         }
       }
     } catch (error) {
@@ -219,19 +208,19 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent,
     try {
       const weight = parseInt(prizeWeight);
       const quantity = parseInt(prizeQuantity);
-
+      
       // Validate weight
       if (weight <= 0 || weight > 100) {
         alert('Weight must be between 1-100');
         return;
       }
-
+      
       // Validate quantity
       if (quantity < 0) {
         alert('Quantity must be 0 or greater');
         return;
       }
-
+      
       if (isDemoMode) {
         if (editingPrize) {
           demoAPI.updatePrize(editingPrize.id, { name: prizeName, weight, quantity });
@@ -294,83 +283,6 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent,
     setEditingPrize(null);
   };
 
-  // Clear slot spin logs
-  const handleClearSlotLogs = async () => {
-    try {
-      const count = slotLogs.length;
-
-      if (isDemoMode) {
-        demoAPI.clearSlotSpinLogs();
-      } else {
-        await fetch(`${apiUrl}/slot-spin/logs`, {
-          method: 'DELETE',
-          headers: { Authorization: `Bearer ${accessToken}` }
-        });
-      }
-
-      // Refresh the logs
-      setSlotLogs([]);
-      toast.success(`Berhasil menghapus ${count} riwayat slot spin`, {
-        description: 'Semua data telah dihapus secara permanen'
-      });
-    } catch (error) {
-      console.error('Error clearing slot spin logs:', error);
-      toast.error('Terjadi kesalahan saat menghapus riwayat', {
-        description: 'Silakan coba lagi'
-      });
-    }
-  };
-
-  // Export slot spin logs to CSV
-  const handleExportSlotLogs = () => {
-    if (slotLogs.length === 0) {
-      toast.error('Tidak ada data untuk diekspor');
-      return;
-    }
-
-    try {
-      // Create CSV header
-      const headers = ['Timestamp', 'Participant Name', 'Prize Won', 'Mode'];
-
-      // Create CSV rows
-      const rows = slotLogs.map((log) => [
-        new Date(log.timestamp).toLocaleString('en-US'),
-        log.participantName,
-        log.prizeName,
-        log.mode === 'pre-selected' ? 'Pre-selected Prize' : 'Random Draw'
-      ]);
-
-      // Combine headers and rows
-      const csvContent = [
-        headers.join(','),
-        ...rows.map((row) => row.map((cell) => `"${cell}"`).join(','))
-      ].join('\n');
-
-      // Create blob and download
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      const url = URL.createObjectURL(blob);
-
-      const fileName = `slot-spin-history-${new Date().toISOString().split('T')[0]}.csv`;
-      link.setAttribute('href', url);
-      link.setAttribute('download', fileName);
-      link.style.visibility = 'hidden';
-
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      toast.success(`File berhasil diunduh: ${fileName}`, {
-        description: `${slotLogs.length} records diekspor ke CSV`
-      });
-    } catch (error) {
-      console.error('Error exporting slot spin logs:', error);
-      toast.error('Terjadi kesalahan saat mengekspor data', {
-        description: 'Silakan coba lagi'
-      });
-    }
-  };
-
   return (
     <div className="min-h-screen bg-slate-900 flex">
       {/* Sidebar */}
@@ -389,10 +301,11 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent,
         <nav className="flex-1 p-4 space-y-2">
           <button
             onClick={() => setActiveTab('participants')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'participants'
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+              activeTab === 'participants'
                 ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg'
                 : 'text-slate-300 hover:bg-slate-700'
-              }`}
+            }`}
           >
             <Users className="w-5 h-5" />
             <span>Manage Participants</span>
@@ -400,10 +313,11 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent,
 
           <button
             onClick={() => setActiveTab('prizes')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'prizes'
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+              activeTab === 'prizes'
                 ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg'
                 : 'text-slate-300 hover:bg-slate-700'
-              }`}
+            }`}
           >
             <Gift className="w-5 h-5" />
             <span>Manage Prizes</span>
@@ -411,24 +325,14 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent,
 
           <button
             onClick={() => setActiveTab('logs')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'logs'
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+              activeTab === 'logs'
                 ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg'
                 : 'text-slate-300 hover:bg-slate-700'
-              }`}
+            }`}
           >
             <FileText className="w-5 h-5" />
-            <span>Prize Wheel Logs</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('slot-logs')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'slot-logs'
-                ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg'
-                : 'text-slate-300 hover:bg-slate-700'
-              }`}
-          >
-            <Trophy className="w-5 h-5" />
-            <span>Slot Spin History</span>
+            <span>Event Logs</span>
           </button>
 
           <div className="pt-4 border-t border-slate-700 space-y-2">
@@ -439,7 +343,7 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent,
               <Monitor className="w-5 h-5" />
               <span>Prize Wheel Event</span>
             </button>
-
+            
             <button
               onClick={onViewSlotSpin}
               className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700 transition-all"
@@ -469,7 +373,7 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent,
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
               <StatsCard
                 icon={Users}
-                label="Total Peserta"
+                label="Total Participants"
                 value={participants.length}
                 color="purple"
               />
@@ -783,8 +687,8 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent,
         {activeTab === 'logs' && (
           <div>
             <div className="mb-6">
-              <h1 className="text-white mb-2">Prize Wheel Event Logs</h1>
-              <p className="text-slate-400">History of prize wheel draws conducted</p>
+              <h1 className="text-white mb-2">Event Logs</h1>
+              <p className="text-slate-400">History of draws conducted</p>
             </div>
 
             <div className="space-y-4">
@@ -814,129 +718,6 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent,
                     </div>
                   </div>
                 ))
-              )}
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'slot-logs' && (
-          <div>
-            <div className="mb-6 flex items-start justify-between">
-              <div>
-                <h1 className="text-white mb-2">Slot Spin History</h1>
-                <p className="text-slate-400">
-                  Complete history of all slot spins
-                  {slotLogs.length > 0 && (
-                    <span className="ml-2 px-2 py-1 bg-purple-500/20 text-purple-400 rounded-md text-sm">
-                      {slotLogs.length} {slotLogs.length === 1 ? 'record' : 'records'}
-                    </span>
-                  )}
-                </p>
-              </div>
-              <div className="flex gap-3">
-                <Button
-                  onClick={handleExportSlotLogs}
-                  disabled={slotLogs.length === 0}
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Export to CSV
-                </Button>
-
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      disabled={slotLogs.length === 0}
-                      variant="destructive"
-                      className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700"
-                    >
-                      <Trash className="w-4 h-4 mr-2" />
-                      Clear Logs
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent className="bg-slate-800 text-white border-slate-700">
-                    <AlertDialogHeader>
-                      <AlertDialogTitle className="text-red-400 flex items-center gap-2">
-                        <Trash className="w-5 h-5" />
-                        WARNING: Delete All History
-                      </AlertDialogTitle>
-                      <AlertDialogDescription className="text-slate-300">
-                        Are you sure you want to delete **all slot spin history data**?
-                        <br />
-                        <br />
-                        <span className="text-red-400">This action cannot be undone.</span>
-                        <br />
-                        <br />
-                        A total of {slotLogs.length} records will be permanently deleted.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel className="bg-slate-700 hover:bg-slate-600 text-white border-slate-600">
-                        Cancel
-                      </AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={handleClearSlotLogs}
-                        className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700"
-                      >
-                        Yes, Delete All
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              {slotLogs.length === 0 ? (
-                <div className="bg-slate-800 rounded-xl border border-slate-700 p-12 text-center">
-                  <Trophy className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-                  <p className="text-slate-400">No slot spin history yet</p>
-                  <p className="text-slate-500 text-sm mt-2">Start a slot spin event to see results here</p>
-                </div>
-              ) : (
-                <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead className="bg-slate-700/50">
-                        <tr>
-                          <th className="px-6 py-4 text-left text-slate-300">Timestamp</th>
-                          <th className="px-6 py-4 text-left text-slate-300">Participant</th>
-                          <th className="px-6 py-4 text-left text-slate-300">Prize Won</th>
-                          <th className="px-6 py-4 text-left text-slate-300">Mode</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-700">
-                        {slotLogs.map((log) => (
-                          <tr key={log.id} className="hover:bg-slate-700/30 transition-colors">
-                            <td className="px-6 py-4 text-slate-400 text-sm">
-                              {new Date(log.timestamp).toLocaleString('en-US')}
-                            </td>
-                            <td className="px-6 py-4">
-                              <div className="flex items-center gap-2">
-                                <Users className="w-4 h-4 text-blue-400" />
-                                <span className="text-white">{log.participantName}</span>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4">
-                              <div className="flex items-center gap-2">
-                                <Gift className="w-4 h-4 text-yellow-400" />
-                                <span className="text-white">{log.prizeName}</span>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4">
-                              <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs ${log.mode === 'pre-selected'
-                                  ? 'bg-purple-500/20 text-purple-400 border border-purple-500/50'
-                                  : 'bg-green-500/20 text-green-400 border border-green-500/50'
-                                }`}>
-                                {log.mode === 'pre-selected' ? 'Pre-selected Prize' : 'Random Draw'}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
               )}
             </div>
           </div>
