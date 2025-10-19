@@ -50,7 +50,7 @@ export function SlotSpinPage({ isDemoMode, onBack }: SlotSpinPageProps) {
   const [spinCount, setSpinCount] = useState<"1" | "5" | "10">("1");
   const [currentSpinIndex, setCurrentSpinIndex] = useState(0);
   const [spinHistory, setSpinHistory] = useState<SpinResult[]>([]);
-  
+
   // New state for mode selection
   const [spinMode, setSpinMode] = useState<SpinMode>("random");
   const [preSelectedPrizeId, setPreSelectedPrizeId] = useState<string>("");
@@ -68,10 +68,10 @@ export function SlotSpinPage({ isDemoMode, onBack }: SlotSpinPageProps) {
     if (spinMode !== "pre-selected" || !preSelectedPrizeId) {
       return 10; // Default for random mode
     }
-    
+
     const selectedPrize = prizes.find((p) => p.id === preSelectedPrizeId);
     if (!selectedPrize) return 1;
-    
+
     // Rule: If quantity < 10, max = quantity. If quantity >= 10, max = 10
     return Math.min(selectedPrize.quantity, 10);
   };
@@ -80,7 +80,7 @@ export function SlotSpinPage({ isDemoMode, onBack }: SlotSpinPageProps) {
   const getAvailableSpinOptions = (): Array<"1" | "5" | "10"> => {
     const maxAllowed = getMaxAllowedSpins();
     const allOptions: Array<"1" | "5" | "10"> = ["1", "5", "10"];
-    
+
     return allOptions.filter((option) => {
       const count = parseInt(option);
       return count <= maxAllowed;
@@ -108,7 +108,7 @@ export function SlotSpinPage({ isDemoMode, onBack }: SlotSpinPageProps) {
   useEffect(() => {
     const maxAllowed = getMaxAllowedSpins();
     const currentCount = parseInt(spinCount);
-    
+
     if (currentCount > maxAllowed) {
       // Reset to max allowed if current selection exceeds limit
       if (maxAllowed >= 10) setSpinCount("10");
@@ -118,64 +118,64 @@ export function SlotSpinPage({ isDemoMode, onBack }: SlotSpinPageProps) {
   }, [preSelectedPrizeId, spinMode, prizes]);
 
   // ⌨️ Keyboard support - Enter to spin
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === "Enter" && !isSpinning && !showResult) {
-        if (participants.length > 0 && prizes.length > 0) {
-          // Check if pre-selected mode requires a prize selection
-          if (spinMode === "pre-selected" && !preSelectedPrizeId) {
-            return; // Don't spin if no prize is selected in pre-selected mode
-          }
-          handleStartMultiSpin();
-        }
-      }
-    };
+  // useEffect(() => {
+  //   const handleKeyPress = (e: KeyboardEvent) => {
+  //     if (e.key === "Enter" && !isSpinning && !showResult) {
+  //       if (participants.length > 0 && prizes.length > 0) {
+  //         // Check if pre-selected mode requires a prize selection
+  //         if (spinMode === "pre-selected" && !preSelectedPrizeId) {
+  //           return; // Don't spin if no prize is selected in pre-selected mode
+  //         }
+  //         handleStartMultiSpin();
+  //       }
+  //     }
+  //   };
 
-    window.addEventListener("keydown", handleKeyPress);
-    return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [isSpinning, showResult, participants, prizes, spinCount, spinMode, preSelectedPrizeId]);
+  //   window.addEventListener("keydown", handleKeyPress);
+  //   return () => window.removeEventListener("keydown", handleKeyPress);
+  // }, [isSpinning, showResult, participants, prizes, spinCount, spinMode, preSelectedPrizeId]);
 
   const fetchData = async () => {
     try {
-        if (isDemoMode) {
-            const participantsData = demoAPI.getParticipants();
-            const prizesData = demoAPI.getPrizes();
-            setParticipants(participantsData.filter((p: Participant) => !p.drawn));
-            setPrizes(prizesData.filter((p: Prize) => p.quantity > 0));
-        } else {
-            const [participantsRes, prizesRes] = await Promise.all([
-                fetch(`${apiUrl}/participants`, {
-                    headers: { Authorization: `Bearer ${publicAnonKey}` },
-                }),
-                fetch(`${apiUrl}/prizes`, {
-                    headers: { Authorization: `Bearer ${publicAnonKey}` },
-                }),
-            ]);
+      if (isDemoMode) {
+        const participantsData = demoAPI.getParticipants();
+        const prizesData = demoAPI.getPrizes();
+        setParticipants(participantsData.filter((p: Participant) => !p.drawn));
+        setPrizes(prizesData.filter((p: Prize) => p.quantity > 0));
+      } else {
+        const [participantsRes, prizesRes] = await Promise.all([
+          fetch(`${apiUrl}/participants`, {
+            headers: { Authorization: `Bearer ${publicAnonKey}` },
+          }),
+          fetch(`${apiUrl}/prizes`, {
+            headers: { Authorization: `Bearer ${publicAnonKey}` },
+          }),
+        ]);
 
-            const participantsData = await participantsRes.json();
-            const prizesData = await prizesRes.json();
+        const participantsData = await participantsRes.json();
+        const prizesData = await prizesRes.json();
 
-            setParticipants(
-                (participantsData.participants || []).filter(
-                    (p: Participant) => !p.drawn
-                )
-            );
-            setPrizes(
-                (prizesData.prizes || []).filter((p: Prize) => p.quantity > 0)
-            );
-            // 🆕 Store initial prizes snapshot
-            setInitialPrizes(
-                (prizesData.prizes || []).filter((p: Prize) => p.quantity > 0)
-            );
-        }
-        
-        // 🟢 FIX: Reset the visual slot positions
-        handleReset();
+        setParticipants(
+          (participantsData.participants || []).filter(
+            (p: Participant) => !p.drawn
+          )
+        );
+        setPrizes(
+          (prizesData.prizes || []).filter((p: Prize) => p.quantity > 0)
+        );
+        // 🆕 Store initial prizes snapshot
+        setInitialPrizes(
+          (prizesData.prizes || []).filter((p: Prize) => p.quantity > 0)
+        );
+      }
+
+      // 🟢 FIX: Reset the visual slot positions
+      handleReset();
 
     } catch (error) {
-        console.error("Error fetching data:", error);
+      console.error("Error fetching data:", error);
     }
-};
+  };
 
   // 🆕 Identify grand prizes (lowest quantity at start)
   const getGrandPrizes = (): Prize[] => {
@@ -212,32 +212,32 @@ export function SlotSpinPage({ isDemoMode, onBack }: SlotSpinPageProps) {
  * - Participants with higher "chance" are more likely to get rarer (low-quantity) prizes.
  * - Identify main prize once at start (lowest quantity).
  */
-const selectPrizeByBias = (participant: any): Prize | null => {
-  if (prizes.length === 0) return null;
+  const selectPrizeByBias = (participant: any): Prize | null => {
+    if (prizes.length === 0) return null;
 
-  // Identify grand prize(s) = smallest quantity before spin
-  const minQty = Math.min(...prizes.map((p) => p.quantity));
-  const grandPrizes = prizes.filter((p) => p.quantity === minQty);
+    // Identify grand prize(s) = smallest quantity before spin
+    const minQty = Math.min(...prizes.map((p) => p.quantity));
+    const grandPrizes = prizes.filter((p) => p.quantity === minQty);
 
-  // Bias factor: higher participant chance = higher chance for grand prize
-  const highChance = participant.chance ?? 1;
-  const totalChance = participants.reduce((sum, p) => sum + (p.chances ?? 1), 0);
-  const grandPrizeWeight = highChance / totalChance;
+    // Bias factor: higher participant chance = higher chance for grand prize
+    const highChance = participant.chance ?? 1;
+    const totalChance = participants.reduce((sum, p) => sum + (p.chances ?? 1), 0);
+    const grandPrizeWeight = highChance / totalChance;
 
-  const roll = Math.random();
-  if (roll < grandPrizeWeight && grandPrizes.length > 0) {
-    return grandPrizes[Math.floor(Math.random() * grandPrizes.length)];
-  }
+    const roll = Math.random();
+    if (roll < grandPrizeWeight && grandPrizes.length > 0) {
+      return grandPrizes[Math.floor(Math.random() * grandPrizes.length)];
+    }
 
-  // Otherwise select normal prize by remaining quantity weights
-  const totalWeight = prizes.reduce((sum, p) => sum + p.quantity, 0);
-  let r = Math.random() * totalWeight;
-  for (const p of prizes) {
-    r -= p.quantity;
-    if (r <= 0) return p;
-  }
-  return prizes[0];
-};
+    // Otherwise select normal prize by remaining quantity weights
+    const totalWeight = prizes.reduce((sum, p) => sum + p.quantity, 0);
+    let r = Math.random() * totalWeight;
+    for (const p of prizes) {
+      r -= p.quantity;
+      if (r <= 0) return p;
+    }
+    return prizes[0];
+  };
 
   // Get pre-selected prize
   const getPreSelectedPrize = (): Prize | null => {
@@ -314,317 +314,355 @@ const selectPrizeByBias = (participant: any): Prize | null => {
     }
   };
 
-// const handleSingleSpin = () => {
-//   return new Promise<void>((resolve) => {
-//     if (animationRef.current !== null) {
-//       cancelAnimationFrame(animationRef.current);
-//       animationRef.current = null;
-//     }
-//     if (participants.length === 0 || prizes.length === 0) {
-//       resolve();
-//       return;
-//     }
+  // const handleSingleSpin = () => {
+  //   return new Promise<void>((resolve) => {
+  //     if (animationRef.current !== null) {
+  //       cancelAnimationFrame(animationRef.current);
+  //       animationRef.current = null;
+  //     }
+  //     if (participants.length === 0 || prizes.length === 0) {
+  //       resolve();
+  //       return;
+  //     }
 
-//     setShowResult(false);
-//     setSelectedParticipant(null);
-//     setSelectedPrize(null);
+  //     setShowResult(false);
+  //     setSelectedParticipant(null);
+  //     setSelectedPrize(null);
 
-//     // Select random participant
-//     const randomParticipantIndex = Math.floor(
-//       Math.random() * participants.length
-//     );
-//     const selectedPart = participants[randomParticipantIndex];
+  //     // Select random participant
+  //     const randomParticipantIndex = Math.floor(
+  //       Math.random() * participants.length
+  //     );
+  //     const selectedPart = participants[randomParticipantIndex];
 
-//     // Select prize based on mode
-//     let selectedPrz: Prize | null = null;
-//     if (spinMode === "pre-selected") {
-//       selectedPrz = getPreSelectedPrize();
-//     } else {
-//       selectedPrz = selectPrizeByWeight();
-//     }
+  //     // Select prize based on mode
+  //     let selectedPrz: Prize | null = null;
+  //     if (spinMode === "pre-selected") {
+  //       selectedPrz = getPreSelectedPrize();
+  //     } else {
+  //       selectedPrz = selectPrizeByWeight();
+  //     }
 
-//     if (!selectedPrz) {
-//       resolve();
-//       return;
-//     }
+  //     if (!selectedPrz) {
+  //       resolve();
+  //       return;
+  //     }
 
-//     const totalParticipants = participants.length;
-//     const totalPrizes = prizes.length;
+  //     const totalParticipants = participants.length;
+  //     const totalPrizes = prizes.length;
 
-//     const normalizedPartStart = normalizeSlotPos(
-//       participantSlotPos,
-//       totalParticipants
-//     );
-//     const normalizedPrizeStart = normalizeSlotPos(prizeSlotPos, totalPrizes);
+  //     const normalizedPartStart = normalizeSlotPos(
+  //       participantSlotPos,
+  //       totalParticipants
+  //     );
+  //     const normalizedPrizeStart = normalizeSlotPos(prizeSlotPos, totalPrizes);
 
-//     const prizeIndex = prizes.findIndex((p) => p.id === selectedPrz.id);
+  //     const prizeIndex = prizes.findIndex((p) => p.id === selectedPrz.id);
 
-//     let startTime: number | null = null;
-//     const duration = 4000;
-//     const baseRotations = 6;
+  //     let startTime: number | null = null;
+  //     const duration = 4000;
+  //     const baseRotations = 6;
 
-//     const finalPartPosition =
-//       normalizedPartStart +
-//       baseRotations * totalParticipants +
-//       randomParticipantIndex;
-//     const finalPrizePosition =
-//       normalizedPrizeStart + baseRotations * totalPrizes + prizeIndex;
+  //     const finalPartPosition =
+  //       normalizedPartStart +
+  //       baseRotations * totalParticipants +
+  //       randomParticipantIndex;
+  //     const finalPrizePosition =
+  //       normalizedPrizeStart + baseRotations * totalPrizes + prizeIndex;
 
-//     const animate = (timestamp: number) => {
-//       if (!startTime) {
-//         startTime = timestamp;
-//         setIsSpinning(true);
-//         spinSound.current?.play().catch(() => {});
-//       }
+  //     const animate = (timestamp: number) => {
+  //       if (!startTime) {
+  //         startTime = timestamp;
+  //         setIsSpinning(true);
+  //         spinSound.current?.play().catch(() => {});
+  //       }
 
-//       const elapsed = timestamp - startTime;
-//       const progress = Math.min(elapsed / duration, 1);
-//       const easeOut = 1 - Math.pow(1 - progress, 3);
+  //       const elapsed = timestamp - startTime;
+  //       const progress = Math.min(elapsed / duration, 1);
+  //       const easeOut = 1 - Math.pow(1 - progress, 3);
 
-//       const currentPartPos =
-//         normalizedPartStart +
-//         easeOut * (finalPartPosition - normalizedPartStart);
+  //       const currentPartPos =
+  //         normalizedPartStart +
+  //         easeOut * (finalPartPosition - normalizedPartStart);
 
-//       setParticipantSlotPos(currentPartPos);
+  //       setParticipantSlotPos(currentPartPos);
 
-//       // Only animate prize slot in random mode
-//       if (spinMode === "random") {
-//         const currentPrizePos =
-//           normalizedPrizeStart +
-//           easeOut * (finalPrizePosition - normalizedPrizeStart);
-//         setPrizeSlotPos(currentPrizePos);
-//       }
+  //       // Only animate prize slot in random mode
+  //       if (spinMode === "random") {
+  //         const currentPrizePos =
+  //           normalizedPrizeStart +
+  //           easeOut * (finalPrizePosition - normalizedPrizeStart);
+  //         setPrizeSlotPos(currentPrizePos);
+  //       }
 
-//       if (progress < 1) {
-//         animationRef.current = requestAnimationFrame(animate);
-//       } else {
-//         setParticipantSlotPos(finalPartPosition);
-//         if (spinMode === "random") {
-//           setPrizeSlotPos(finalPrizePosition);
-//         }
-//         setIsSpinning(false);
-//         setSelectedParticipant(selectedPart);
-//         setSelectedPrize(selectedPrz);
-//         animationRef.current = null;
+  //       if (progress < 1) {
+  //         animationRef.current = requestAnimationFrame(animate);
+  //       } else {
+  //         setParticipantSlotPos(finalPartPosition);
+  //         if (spinMode === "random") {
+  //           setPrizeSlotPos(finalPrizePosition);
+  //         }
+  //         setIsSpinning(false);
+  //         setSelectedParticipant(selectedPart);
+  //         setSelectedPrize(selectedPrz);
+  //         animationRef.current = null;
 
-//         spinSound.current?.pause();
-//         winSound.current?.play().catch(() => {});
+  //         spinSound.current?.pause();
+  //         winSound.current?.play().catch(() => {});
 
-//         // Update data
-//         updatePrizeQuantity(selectedPrz.id, selectedPrz.quantity - 1);
-//         markParticipantDrawn(selectedPart.id);
-//         saveToHistory(selectedPart, selectedPrz);
+  //         // Update data
+  //         updatePrizeQuantity(selectedPrz.id, selectedPrz.quantity - 1);
+  //         markParticipantDrawn(selectedPart.id);
+  //         saveToHistory(selectedPart, selectedPrz);
 
-//         // Add to history
-//         const newResult: SpinResult = {
-//           id: Date.now().toString() + Math.random(),
-//           participant: selectedPart,
-//           prize: selectedPrz,
-//           timestamp: new Date().toISOString(),
-//         };
-//         setSpinHistory((prev) => [newResult, ...prev]);
+  //         // Add to history
+  //         const newResult: SpinResult = {
+  //           id: Date.now().toString() + Math.random(),
+  //           participant: selectedPart,
+  //           prize: selectedPrz,
+  //           timestamp: new Date().toISOString(),
+  //         };
+  //         setSpinHistory((prev) => [newResult, ...prev]);
 
-//         // Remove from active lists (DISABLED for now)
-//         // supaya nama peserta tetap muncul sebelum reset manual
-//         /*
-//         setParticipants((prev) =>
-//           prev.filter((p) => p.id !== selectedPart.id)
-//         );
-//         setPrizes((prev) => {
-//           const updated = prev.map((p) =>
-//             p.id === selectedPrz.id ? { ...p, quantity: p.quantity - 1 } : p
-//           );
-//           return updated.filter((p) => p.quantity > 0);
-//         });
-//         */
+  //         // Remove from active lists (DISABLED for now)
+  //         // supaya nama peserta tetap muncul sebelum reset manual
+  //         /*
+  //         setParticipants((prev) =>
+  //           prev.filter((p) => p.id !== selectedPart.id)
+  //         );
+  //         setPrizes((prev) => {
+  //           const updated = prev.map((p) =>
+  //             p.id === selectedPrz.id ? { ...p, quantity: p.quantity - 1 } : p
+  //           );
+  //           return updated.filter((p) => p.quantity > 0);
+  //         });
+  //         */
 
-//         // Tampilkan hasil spin
-//         setTimeout(() => {
-//           setShowResult(true);
-//           resolve();
-//         }, 500);
-//       }
-//     };
+  //         // Tampilkan hasil spin
+  //         setTimeout(() => {
+  //           setShowResult(true);
+  //           resolve();
+  //         }, 500);
+  //       }
+  //     };
 
-//     animationRef.current = requestAnimationFrame(animate);
-//   });
-// };
+  //     animationRef.current = requestAnimationFrame(animate);
+  //   });
+  // };
 
-const handleSingleSpin = () => {
-  return new Promise<void>((resolve) => {
-    if (animationRef.current !== null) {
-      cancelAnimationFrame(animationRef.current);
-      animationRef.current = null;
+  const handleSingleSpin = () => {
+    return new Promise<void>((resolve) => {
+      if (animationRef.current !== null) {
+        cancelAnimationFrame(animationRef.current);
+        animationRef.current = null;
+      }
+
+      if (participants.length === 0 || prizes.length === 0) {
+        resolve();
+        return;
+      }
+
+      setShowResult(false);
+      setSelectedParticipant(null);
+      setSelectedPrize(null);
+
+      // 🎯 Select random participant (weighted by their chance value)
+      const totalChance = participants.reduce((sum, p) => sum + (p.chances ?? 1), 0);
+      let rand = Math.random() * totalChance;
+      let selectedPart = participants[0];
+      for (const p of participants) {
+        rand -= p.chances ?? 1;
+        if (rand <= 0) {
+          selectedPart = p;
+          break;
+        }
+      }
+
+      // 🏆 Select prize based on participant chance
+      let selectedPrz: Prize | null = null;
+      if (spinMode === "pre-selected") {
+        selectedPrz = getPreSelectedPrize();
+      } else {
+        selectedPrz = selectPrizeByBias(selectedPart);
+      }
+
+      if (!selectedPrz) {
+        resolve();
+        return;
+      }
+
+      const totalParticipants = participants.length;
+      const totalPrizes = prizes.length;
+
+      const normalizedPartStart = normalizeSlotPos(
+        participantSlotPos,
+        totalParticipants
+      );
+      const normalizedPrizeStart = normalizeSlotPos(prizeSlotPos, totalPrizes);
+
+      const prizeIndex = prizes.findIndex((p) => p.id === selectedPrz.id);
+
+      let startTime: number | null = null;
+      const duration = 4000;
+      const baseRotations = 6;
+
+      const finalPartPosition =
+        normalizedPartStart +
+        baseRotations * totalParticipants +
+        participants.indexOf(selectedPart);
+      const finalPrizePosition =
+        normalizedPrizeStart + baseRotations * totalPrizes + prizeIndex;
+
+      const animate = (timestamp: number) => {
+        if (!startTime) {
+          startTime = timestamp;
+          setIsSpinning(true);
+          spinSound.current?.play().catch(() => { });
+        }
+
+        const elapsed = timestamp - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+
+        const currentPartPos =
+          normalizedPartStart +
+          easeOut * (finalPartPosition - normalizedPartStart);
+
+        setParticipantSlotPos(currentPartPos);
+
+        if (spinMode === "random") {
+          const currentPrizePos =
+            normalizedPrizeStart +
+            easeOut * (finalPrizePosition - normalizedPrizeStart);
+          setPrizeSlotPos(currentPrizePos);
+        }
+
+        if (progress < 1) {
+          animationRef.current = requestAnimationFrame(animate);
+        } else {
+          setParticipantSlotPos(finalPartPosition);
+          if (spinMode === "random") setPrizeSlotPos(finalPrizePosition);
+          setIsSpinning(false);
+          animationRef.current = null;
+
+          spinSound.current?.pause();
+          winSound.current?.play().catch(() => { });
+
+          setSelectedParticipant(selectedPart);
+          setSelectedPrize(selectedPrz);
+
+          // Update data
+          updatePrizeQuantity(selectedPrz.id, selectedPrz.quantity - 1);
+          markParticipantDrawn(selectedPart.id);
+          saveToHistory(selectedPart, selectedPrz);
+
+          // Add to history
+          const newResult: SpinResult = {
+            id: Date.now().toString() + Math.random(),
+            participant: selectedPart,
+            prize: selectedPrz,
+            timestamp: new Date().toISOString(),
+          };
+          setSpinHistory((prev) => [newResult, ...prev]);
+
+          // 🟢 Keep participants visible — no reset yet
+          setTimeout(() => {
+            setShowResult(true);
+            resolve();
+          }, 500);
+        }
+      };
+
+      animationRef.current = requestAnimationFrame(animate);
+    });
+  };
+
+  const handleStartMultiSpin = async () => {
+    const count = parseInt(spinCount);
+    setCurrentSpinIndex(0);
+
+    for (let i = 0; i < count; i++) {
+      if (participants.length === 0 || prizes.length === 0) break;
+
+      // Check if pre-selected prize still has quantity
+      if (spinMode === "pre-selected") {
+        const currentPrize = getPreSelectedPrize();
+        if (!currentPrize || currentPrize.quantity <= 0) break;
+      }
+
+      setCurrentSpinIndex(i + 1);
+      await handleSingleSpin();
+      if (i < count - 1) {
+        // Wait before next spin
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        setShowResult(false);
+      }
     }
 
-    if (participants.length === 0 || prizes.length === 0) {
-      resolve();
-      return;
-    }
+    setCurrentSpinIndex(0);
+  };
 
+  const handleReset = () => {
+    setParticipantSlotPos(0);
+    setPrizeSlotPos(0);
     setShowResult(false);
     setSelectedParticipant(null);
     setSelectedPrize(null);
 
-    // 🎯 Select random participant (weighted by their chance value)
-    const totalChance = participants.reduce((sum, p) => sum + (p.chances ?? 1), 0);
-    let rand = Math.random() * totalChance;
-    let selectedPart = participants[0];
-    for (const p of participants) {
-      rand -= p.chances ?? 1;
-      if (rand <= 0) {
-        selectedPart = p;
-        break;
-      }
-    }
-
-    // 🏆 Select prize based on participant chance
-    let selectedPrz: Prize | null = null;
-    if (spinMode === "pre-selected") {
-      selectedPrz = getPreSelectedPrize();
-    } else {
-      selectedPrz = selectPrizeByBias(selectedPart);
-    }
-
-    if (!selectedPrz) {
-      resolve();
-      return;
-    }
-
-    const totalParticipants = participants.length;
-    const totalPrizes = prizes.length;
-
-    const normalizedPartStart = normalizeSlotPos(
-      participantSlotPos,
-      totalParticipants
-    );
-    const normalizedPrizeStart = normalizeSlotPos(prizeSlotPos, totalPrizes);
-
-    const prizeIndex = prizes.findIndex((p) => p.id === selectedPrz.id);
-
-    let startTime: number | null = null;
-    const duration = 4000;
-    const baseRotations = 6;
-
-    const finalPartPosition =
-      normalizedPartStart +
-      baseRotations * totalParticipants +
-      participants.indexOf(selectedPart);
-    const finalPrizePosition =
-      normalizedPrizeStart + baseRotations * totalPrizes + prizeIndex;
-
-    const animate = (timestamp: number) => {
-      if (!startTime) {
-        startTime = timestamp;
-        setIsSpinning(true);
-        spinSound.current?.play().catch(() => {});
-      }
-
-      const elapsed = timestamp - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const easeOut = 1 - Math.pow(1 - progress, 3);
-
-      const currentPartPos =
-        normalizedPartStart +
-        easeOut * (finalPartPosition - normalizedPartStart);
-
-      setParticipantSlotPos(currentPartPos);
-
-      if (spinMode === "random") {
-        const currentPrizePos =
-          normalizedPrizeStart +
-          easeOut * (finalPrizePosition - normalizedPrizeStart);
-        setPrizeSlotPos(currentPrizePos);
-      }
-
-      if (progress < 1) {
-        animationRef.current = requestAnimationFrame(animate);
-      } else {
-        setParticipantSlotPos(finalPartPosition);
-        if (spinMode === "random") setPrizeSlotPos(finalPrizePosition);
-        setIsSpinning(false);
-        animationRef.current = null;
-
-        spinSound.current?.pause();
-        winSound.current?.play().catch(() => {});
-
-        setSelectedParticipant(selectedPart);
-        setSelectedPrize(selectedPrz);
-
-        // Update data
-        updatePrizeQuantity(selectedPrz.id, selectedPrz.quantity - 1);
-        markParticipantDrawn(selectedPart.id);
-        saveToHistory(selectedPart, selectedPrz);
-
-        // Add to history
-        const newResult: SpinResult = {
-          id: Date.now().toString() + Math.random(),
-          participant: selectedPart,
-          prize: selectedPrz,
-          timestamp: new Date().toISOString(),
-        };
-        setSpinHistory((prev) => [newResult, ...prev]);
-
-        // 🟢 Keep participants visible — no reset yet
-        setTimeout(() => {
-          setShowResult(true);
-          resolve();
-        }, 500);
-      }
-    };
-
-    animationRef.current = requestAnimationFrame(animate);
-  });
-};
-    
-const handleStartMultiSpin = async () => {
-  const count = parseInt(spinCount);
-  setCurrentSpinIndex(0);
-
-  for (let i = 0; i < count; i++) {
-    if (participants.length === 0 || prizes.length === 0) break;
-
-    // Check if pre-selected prize still has quantity
-    if (spinMode === "pre-selected") {
-      const currentPrize = getPreSelectedPrize();
-      if (!currentPrize || currentPrize.quantity <= 0) break;
-    }
-
-    setCurrentSpinIndex(i + 1);
-    await handleSingleSpin();
-    if (i < count - 1) {
-      // Wait before next spin
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setShowResult(false);
-    }
-  }
-
-  setCurrentSpinIndex(0);
-};
-
-const handleReset = () => {
-  setParticipantSlotPos(0);
-  setPrizeSlotPos(0);
-  setShowResult(false);
-  setSelectedParticipant(null);
-  setSelectedPrize(null);
-
-  // 🧹 Sekarang baru hapus participant & update prize saat reset dilakukan
-  if (selectedParticipant && selectedPrize) {
-    setParticipants((prev) =>
-      prev.filter((p) => p.id !== selectedParticipant.id)
-    );
-
-    setPrizes((prev) => {
-      const updated = prev.map((p) =>
-        p.id === selectedPrize.id
-          ? { ...p, quantity: p.quantity - 1 }
-          : p
+    // 🧹 Sekarang baru hapus participant & update prize saat reset dilakukan
+    if (selectedParticipant && selectedPrize) {
+      setParticipants((prev) =>
+        prev.filter((p) => p.id !== selectedParticipant.id)
       );
-      return updated.filter((p) => p.quantity > 0);
-    });
-  }
-};
+
+      setPrizes((prev) => {
+        const updated = prev.map((p) =>
+          p.id === selectedPrize.id
+            ? { ...p, quantity: p.quantity - 1 }
+            : p
+        );
+        return updated.filter((p) => p.quantity > 0);
+      });
+    }
+  };
+
+// ⌨️ Keyboard support - Enter to spin / reset
+  useEffect(() => {
+  const handleKeyPress = (e: KeyboardEvent) => {
+    if (e.key === "Enter") {
+      // ENTER pressed while spinning — do nothing
+      if (isSpinning) return;
+
+      // If result is showing, pressing Enter triggers Spin Again
+      if (showResult) {
+        handleReset();
+        return;
+      }
+
+      // If ready to spin
+      if (participants.length > 0 && prizes.length > 0) {
+        // Prevent spin if pre-selected mode without prize
+        if (spinMode === "pre-selected" && !preSelectedPrizeId) {
+          return;
+        }
+        handleStartMultiSpin();
+      }
+    }
+  };
+
+  window.addEventListener("keydown", handleKeyPress);
+  return () => window.removeEventListener("keydown", handleKeyPress);
+}, [
+  isSpinning,
+  showResult,
+  participants,
+  prizes,
+  spinMode,
+  preSelectedPrizeId,
+  handleStartMultiSpin,
+  handleReset,
+]);
+
 
 
   // Slot transforms
@@ -637,16 +675,14 @@ const handleReset = () => {
   const prizeOffset = (prizeSlotPos % prizeTotalRepeated) * itemHeight;
 
   const participantTransform = {
-    transform: `translateY(calc(-${participantOffset}px + ${
-      containerHeight / 2
-    }px - ${itemHeight / 2}px))`,
+    transform: `translateY(calc(-${participantOffset}px + ${containerHeight / 2
+      }px - ${itemHeight / 2}px))`,
     transition: isSpinning ? "none" : "transform 0.3s ease-out",
   };
 
   const prizeTransform = {
-    transform: `translateY(calc(-${prizeOffset}px + ${containerHeight / 2}px - ${
-      itemHeight / 2
-    }px))`,
+    transform: `translateY(calc(-${prizeOffset}px + ${containerHeight / 2}px - ${itemHeight / 2
+      }px))`,
     transition: isSpinning ? "none" : "transform 0.3s ease-out",
   };
 
@@ -707,11 +743,10 @@ const handleReset = () => {
                   setPreSelectedPrizeId("");
                 }}
                 disabled={isSpinning}
-                className={`flex items-center gap-2 px-6 py-6 text-lg ${
-                  spinMode === "random"
+                className={`flex items-center gap-2 px-6 py-6 text-lg ${spinMode === "random"
                     ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 ring-2 ring-white"
                     : "bg-slate-700 hover:bg-slate-600"
-                }`}
+                  }`}
               >
                 <Shuffle className="w-5 h-5" />
                 Random Draw (Participant + Prize)
@@ -719,11 +754,10 @@ const handleReset = () => {
               <Button
                 onClick={() => setSpinMode("pre-selected")}
                 disabled={isSpinning}
-                className={`flex items-center gap-2 px-6 py-6 text-lg ${
-                  spinMode === "pre-selected"
+                className={`flex items-center gap-2 px-6 py-6 text-lg ${spinMode === "pre-selected"
                     ? "bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 ring-2 ring-white"
                     : "bg-slate-700 hover:bg-slate-600"
-                }`}
+                  }`}
               >
                 <Target className="w-5 h-5" />
                 Pre-selected Prize Mode
@@ -766,10 +800,10 @@ const handleReset = () => {
               </p>
             )}
             <ToggleGroup
-                type="single"
-                value={spinCount}
-                onValueChange={(value: "1" | "5" | "10" | undefined) => {
-                  if (value) setSpinCount(value);
+              type="single"
+              value={spinCount}
+              onValueChange={(value: "1" | "5" | "10" | undefined) => {
+                if (value) setSpinCount(value);
               }}
               className="gap-2"
               disabled={isSpinning}
@@ -857,7 +891,7 @@ const handleReset = () => {
                       {spinMode === "pre-selected" ? "Selected Prize" : "Prize"}
                     </h3>
                   </div>
-                  
+
                   {spinMode === "random" ? (
                     // Random mode - spinning slot
                     <>
@@ -922,7 +956,7 @@ const handleReset = () => {
           </div>
 
           {/* BUTTONS */}
-          <div className="flex gap-4 mb-8">
+         <div className="flex gap-4 mb-8" style={{ visibility: "hidden", position: "absolute" }}>
             {!showResult && (
               <Button
                 onClick={handleStartMultiSpin}
