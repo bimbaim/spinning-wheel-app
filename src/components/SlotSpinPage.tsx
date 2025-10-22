@@ -435,7 +435,7 @@ export function SlotSpinPage({ isDemoMode, onBack }: SlotSpinPageProps) {
               scalar: 0.8 + Math.random() * 1.2, // ukuran acak
               decay: 0.85,      // lebih cepat hilang
               ticks: 150,       // lebih sedikit frame → lebih cepat
-              gravity: 0.6,     // jatuh lebih cepat
+              gravity: 0.8,     // jatuh lebih cepat
             });
           }
         }, index * 400); // delay tiap roulette
@@ -454,7 +454,24 @@ export function SlotSpinPage({ isDemoMode, onBack }: SlotSpinPageProps) {
         };
         eventResults.push(newResult);
 
-        updatePrizeQuantity(result.prize.id, result.prize.quantity - 1);
+        // updatePrizeQuantity(result.prize.id, result.prize.quantity - 1);
+
+        const prizeSpinCounts: Record<string, number> = {};
+        results.forEach(result => {
+          if (result) {
+            prizeSpinCounts[result.prize.id] = (prizeSpinCounts[result.prize.id] || 0) + 1;
+          }
+        });
+
+        // Update quantity sekali per prize
+        for (const prizeId in prizeSpinCounts) {
+          const qtyToDeduct = prizeSpinCounts[prizeId];
+          const prize = prizes.find(p => p.id === prizeId);
+          if (prize) {
+            updatePrizeQuantity(prizeId, prize.quantity - qtyToDeduct);
+          }
+        }
+
         markParticipantDrawn(result.participant.id);
         saveToHistory(result.participant, result.prize);
 
