@@ -46,6 +46,71 @@ interface SlotSpinPageProps {
 
 type SpinMode = "random" | "pre-selected";
 
+interface RawLog {
+  id: string;
+  participantId: string;
+  participantName: string;
+  prizeId: string;
+  prizeName: string;
+  mode: SpinMode;
+  timestamp: string; // The key for grouping
+  // Add other fields needed for SpinResult if missing, like full prize object
+}
+
+const groupLogsIntoEvents = (logs: RawLog[]): SpinEvent[] => {
+  if (!logs || logs.length === 0) return [];
+  
+  // Sort by timestamp descending (newest first)
+  const sortedLogs = [...logs].sort((a, b) => 
+    new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+  );
+  
+  const eventsMap: Map<string, SpinEvent> = new Map();
+  let eventCounter = 0;
+  let lastTimestamp = 0;
+
+  // Grouping by a simple time difference (e.g., logs within 5 seconds belong to the same event)
+  const TIME_THRESHOLD_MS = 5000; 
+
+  for (const log of sortedLogs) {
+    const logTime = new Date(log.timestamp).getTime();
+    let eventKey = `event_${eventCounter}`;
+
+    // If the current log is significantly older than the last one, start a new event group
+    if (lastTimestamp > 0 && (lastTimestamp - logTime) > TIME_THRESHOLD_MS) {
+      eventCounter++;
+      eventKey = `event_${eventCounter}`;
+    }
+    lastTimestamp = logTime;
+
+    // Convert raw log to SpinResult structure (you'll need to reconstruct the full objects)
+    const spinResult: SpinResult = {
+      id: log.id,
+      timestamp: log.timestamp,
+      // ⚠️ NOTE: The participant and prize objects here are simplified and might need
+      // additional data lookup if the logs don't store ALL details (like chances/weight).
+      participant: { id: log.participantId, name: log.participantName, chances: 1, drawn: true },
+      prize: { id: log.prizeId, name: log.prizeName, weight: 1, quantity: 1 } // Simplified placeholder
+    };
+
+    if (eventsMap.has(eventKey)) {
+      const event = eventsMap.get(eventKey)!;
+      event.results.unshift(spinResult); // Add to the front for correct sequence
+      event.count++;
+    } else {
+      eventsMap.set(eventKey, {
+        id: eventKey,
+        count: 1,
+        timestamp: log.timestamp,
+        results: [spinResult],
+      });
+    }
+  }
+
+  // Convert the map values (SpinEvent objects) into an array
+  return Array.from(eventsMap.values());
+};
+
 export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPageProps) {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [prizes, setPrizes] = useState<Prize[]>([]);
@@ -135,17 +200,18 @@ export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPagePr
         setPrizes(prizesData.filter((p: Prize) => p.quantity > 0));
         setInitialPrizes(prizesData.filter((p: Prize) => p.quantity > 0));
       } else {
-        const [participantsRes, prizesRes] = await Promise.all([
-          fetch(`${apiUrl}/participants`, {
-            headers: { Authorization: `Bearer ${accessToken}` },
-          }),
-          fetch(`${apiUrl}/prizes`, {
-            headers: { Authorization: `Bearer ${accessToken}` },
-          }),
+       const [participantsRes, prizesRes, logsRes] = await Promise.all([
+          fetch(`${apiUrl}/participants`, { headers: { Authorization: `Bearer ${accessToken}` } }),
+          fetch(`${apiUrl}/prizes`, { headers: { Authorization: `Bearer ${accessToken}` } }),
+          fetch(`${apiUrl}/slot-spin/logs`, { headers: { Authorization: `Bearer ${accessToken}` } }), 
         ]);
 
         const participantsData = await participantsRes.json();
         const prizesData = await prizesRes.json();
+        const logsData = await logsRes.json();
+
+        const events = groupLogsIntoEvents(logsData.logs || []); // Use helper function
+        setSpinEvents(events);
 
         setParticipants(
           (participantsData.participants || []).filter(
