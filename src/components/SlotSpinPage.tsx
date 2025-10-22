@@ -329,74 +329,85 @@ export function SlotSpinPage({ isDemoMode, onBack }: SlotSpinPageProps) {
   const handleMultiSpin = async () => {
     if (participants.length === 0 || prizes.length === 0 || !preSelectedPrizeId) return;
 
-    const count = parseInt(spinCount);
-    const eventResults: SpinResult[] = [];
+  const count = parseInt(spinCount);
+  const eventResults: SpinResult[] = [];
 
-    setIsSpinning(true);
-    spinSound.current?.play().catch(() => { });
+  setIsSpinning(true);
+  spinSound.current?.play().catch(() => { });
 
-    const totalParticipants = participants.length;
-    const duration = 4000;
-    const baseRotations = 6;
+  const totalParticipants = participants.length;
+  const duration = 4000;
+  const baseRotations = 6;
 
-    const animations = roulettes.map((roulette: any, index: number) => {
-      return new Promise<{ participant: Participant; prize: Prize } | null>((resolve) => {
-        const totalChance = participants.reduce((sum, p) => sum + (p.chances ?? 1), 0);
-        let rand = Math.random() * totalChance;
-        let selectedPart = participants[0];
-        for (const p of participants) {
-          rand -= p.chances ?? 1;
-          if (rand <= 0) {
-            selectedPart = p;
-            break;
-          }
+  // 🔥 Gunakan array sementara agar tidak duplikat
+  let availableParticipants = [...participants];
+
+  const animations = roulettes.map((roulette: any, index: number) => {
+    return new Promise<{ participant: Participant; prize: Prize } | null>((resolve) => {
+      if (availableParticipants.length === 0) {
+        resolve(null);
+        return;
+      }
+
+      // Hitung total peluang
+      const totalChance = availableParticipants.reduce((sum, p) => sum + (p.chances ?? 1), 0);
+      let rand = Math.random() * totalChance;
+      let selectedPart = availableParticipants[0];
+      for (const p of availableParticipants) {
+        rand -= p.chances ?? 1;
+        if (rand <= 0) {
+          selectedPart = p;
+          break;
         }
+      }
 
-        const selectedPrz = prizes.find((p) => p.id === preSelectedPrizeId);
-        if (!selectedPrz) {
-          resolve(null);
-          return;
-        }
+      // 🧹 Hapus dari pool agar tidak terpilih lagi
+      availableParticipants = availableParticipants.filter(p => p.id !== selectedPart.id);
 
-        const normalizedPartStart = normalizeSlotPos(0, totalParticipants);
-        const finalPartPosition = normalizedPartStart + baseRotations * totalParticipants + participants.indexOf(selectedPart);
+      const selectedPrz = prizes.find((p) => p.id === preSelectedPrizeId);
+      if (!selectedPrz) {
+        resolve(null);
+        return;
+      }
 
-        let startTime: number | null = null;
-        const animate = (timestamp: number) => {
-          if (!startTime) startTime = timestamp;
-          const elapsed = timestamp - startTime;
-          const progress = Math.min(elapsed / duration, 1);
-          const easeOut = 1 - Math.pow(1 - progress, 3);
+      const normalizedPartStart = normalizeSlotPos(0, totalParticipants);
+      const finalPartPosition = normalizedPartStart + baseRotations * totalParticipants + participants.indexOf(selectedPart);
 
-          const currentPartPos = normalizedPartStart + easeOut * (finalPartPosition - normalizedPartStart);
+      let startTime: number | null = null;
+      const animate = (timestamp: number) => {
+        if (!startTime) startTime = timestamp;
+        const elapsed = timestamp - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        const currentPartPos = normalizedPartStart + easeOut * (finalPartPosition - normalizedPartStart);
 
+        setRoulettes((prev) =>
+          prev.map((r, i) =>
+            i === index ? { ...r, participantSlotPos: currentPartPos } : r
+          )
+        );
+
+        if (progress < 1) {
+          animationRefs.current[index] = requestAnimationFrame(animate);
+        } else {
           setRoulettes((prev) =>
             prev.map((r, i) =>
-              i === index ? { ...r, participantSlotPos: currentPartPos } : r
-            )
-          );
-
-          if (progress < 1) {
-            animationRefs.current[index] = requestAnimationFrame(animate);
-          } else {
-            setRoulettes((prev) =>
-              prev.map((r, i) =>
-                i === index
-                  ? {
+              i === index
+                ? {
                     ...r,
                     participantSlotPos: finalPartPosition,
                     selectedParticipant: selectedPart,
                     selectedPrize: selectedPrz,
                     showResult: true,
                   }
-                  : r
-              )
-            );
-            resolve({ participant: selectedPart, prize: selectedPrz });
-          }
-        };
+                : r
+            )
+          );
+          resolve({ participant: selectedPart, prize: selectedPrz });
+        }
+      };
 
-        animationRefs.current[index] = requestAnimationFrame(animate);
+      animationRefs.current[index] = requestAnimationFrame(animate);
       });
     });
 
