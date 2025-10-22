@@ -436,7 +436,7 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewSlotSp
             <span>Manage Prizes</span>
           </button>
 
-          <button
+          {/* <button
             onClick={() => setActiveTab('logs')}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'logs'
               ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg'
@@ -445,7 +445,7 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewSlotSp
           >
             <FileText className="w-5 h-5" />
             <span>Prize Logs</span>
-          </button>
+          </button> */}
 
           <button
             onClick={() => setActiveTab('slot-logs')}
