@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Users, Gift, FileText, Monitor, LogOut, Upload, Plus, Edit, Trash2, RotateCcw, CheckCircle, XCircle, Zap, Trophy, Download, Trash } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -41,7 +41,7 @@ interface AdminDashboardProps {
 }
 
 // export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent, onViewSlotSpin }: AdminDashboardProps) {
-  export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewSlotSpin }: AdminDashboardProps) {
+export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewSlotSpin }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<'participants' | 'prizes' | 'logs' | 'slot-logs'>('participants');
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [prizes, setPrizes] = useState<Prize[]>([]);
@@ -372,6 +372,32 @@ interface AdminDashboardProps {
     }
   };
 
+
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6; // jumlah data per halaman
+
+  // 1️⃣ Filter berdasarkan nama
+  const filteredParticipants = useMemo(() => {
+    return participants.filter((p) =>
+      p.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [participants, searchTerm]);
+
+  // 2️⃣ Hitung pagination
+  const totalPages = Math.ceil(filteredParticipants.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentParticipants = filteredParticipants.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
+
+  // 3️⃣ Hitung total chances (buat kolom probability)
+  const totalChances = participants.reduce((sum, p) => sum + p.chances, 0);
+
+  
+
   return (
     <div className="min-h-screen bg-slate-900 flex">
       {/* Sidebar */}
@@ -391,8 +417,8 @@ interface AdminDashboardProps {
           <button
             onClick={() => setActiveTab('participants')}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'participants'
-                ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg'
-                : 'text-slate-300 hover:bg-slate-700'
+              ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg'
+              : 'text-slate-300 hover:bg-slate-700'
               }`}
           >
             <Users className="w-5 h-5" />
@@ -402,8 +428,8 @@ interface AdminDashboardProps {
           <button
             onClick={() => setActiveTab('prizes')}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'prizes'
-                ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg'
-                : 'text-slate-300 hover:bg-slate-700'
+              ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg'
+              : 'text-slate-300 hover:bg-slate-700'
               }`}
           >
             <Gift className="w-5 h-5" />
@@ -413,8 +439,8 @@ interface AdminDashboardProps {
           <button
             onClick={() => setActiveTab('logs')}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'logs'
-                ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg'
-                : 'text-slate-300 hover:bg-slate-700'
+              ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg'
+              : 'text-slate-300 hover:bg-slate-700'
               }`}
           >
             <FileText className="w-5 h-5" />
@@ -424,8 +450,8 @@ interface AdminDashboardProps {
           <button
             onClick={() => setActiveTab('slot-logs')}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'slot-logs'
-                ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg'
-                : 'text-slate-300 hover:bg-slate-700'
+              ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg'
+              : 'text-slate-300 hover:bg-slate-700'
               }`}
           >
             <Trophy className="w-5 h-5" />
@@ -562,90 +588,115 @@ interface AdminDashboardProps {
               </Button>
             </div>
 
-            <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
-  <div className="overflow-x-auto">
-    <table className="w-full">
-      <thead className="bg-slate-700/50">
-        <tr>
-          <th className="px-6 py-4 text-left text-slate-300">ID</th>
-          <th className="px-6 py-4 text-left text-slate-300">Participant Name</th>
-          <th className="px-6 py-4 text-left text-slate-300">Chances (x)</th>
-          {/* New Column Header: Probability */}
-          <th className="px-6 py-4 text-left text-slate-300">Probability</th>
-          <th className="px-6 py-4 text-left text-slate-300">Status</th>
-          <th className="px-6 py-4 text-left text-slate-300">Actions</th>
-        </tr>
-      </thead>
-      <tbody className="divide-y divide-slate-700">
-        {participants.length === 0 ? (
-          <tr>
-            {/* Increase colSpan to 6 for the new column */}
-            <td colSpan={6} className="px-6 py-8 text-center text-slate-400">
-              No participants yet. Click &quot;Add Participant&quot; button to start.
-            </td>
-          </tr>
-        ) : (
-          participants.map((participant) => {
-            // Calculate totalChances inside the map or pass it down as a prop
-            // For this example, let's assume `totalChances` is available in the scope.
-            const totalChances = participants.reduce((sum, p) => sum + p.chances, 0);
-            
-            // Calculate probability as a percentage
-            const probability = totalChances > 0 
-              ? ((participant.chances / totalChances) * 100).toFixed(2) // To 2 decimal places
-              : '0.00';
-            
-            return (
-              <tr key={participant.id} className="hover:bg-slate-700/30 transition-colors">
-                <td className="px-6 py-4 text-slate-400 text-sm">{participant.id.slice(0, 8)}</td>
-                <td className="px-6 py-4 text-white">{participant.name}</td>
-                <td className="px-6 py-4 text-white">{participant.chances}x</td>
-                
-                {/* New Column Data: Probability */}
-                <td className="px-6 py-4 text-cyan-400 font-medium">
-                  {probability}%
-                </td>
-                
-                <td className="px-6 py-4">
-                  {participant.drawn ? (
-                    <span className="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-sm">
-                      Drawn
-                    </span>
-                  ) : (
-                    <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm">
-                      Not Drawn
-                    </span>
-                  )}
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => {
-                        setEditingParticipant(participant);
-                        setParticipantName(participant.name);
-                        setParticipantChances(participant.chances.toString());
-                        setIsParticipantDialogOpen(true);
-                      }}
-                      className="p-2 hover:bg-slate-600 rounded-lg transition-colors"
-                    >
-                      <Edit className="w-4 h-4 text-blue-400" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteParticipant(participant.id)}
-                      className="p-2 hover:bg-slate-600 rounded-lg transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4 text-red-400" />
-                    </button>
-                  </div>
+  <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+      {/* 🔍 Filter by name */}
+      <div className="p-4 border-b border-slate-700 flex items-center justify-between">
+        <input
+          type="text"
+          placeholder="Search by name..."
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setCurrentPage(1); // reset ke halaman 1 saat filter berubah
+          }}
+          className="px-4 py-2 bg-slate-700 text-white rounded-lg w-72 focus:outline-none focus:ring-2 focus:ring-purple-500"
+        />
+        <p className="text-slate-400 text-sm">
+          Showing {currentParticipants.length} of {filteredParticipants.length} participants
+        </p>
+      </div>
+
+      {/* 🧮 Table */}
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead className="bg-slate-700/50">
+            <tr>
+              <th className="px-6 py-4 text-left text-slate-300">ID</th>
+              <th className="px-6 py-4 text-left text-slate-300">Participant Name</th>
+              <th className="px-6 py-4 text-left text-slate-300">Chances (x)</th>
+              <th className="px-6 py-4 text-left text-slate-300">Probability</th>
+              <th className="px-6 py-4 text-left text-slate-300">Status</th>
+              <th className="px-6 py-4 text-left text-slate-300">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-700">
+            {currentParticipants.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="px-6 py-8 text-center text-slate-400">
+                  No participants found.
                 </td>
               </tr>
-            );
-          })
-        )}
-      </tbody>
-    </table>
-  </div>
-</div>
+            ) : (
+              currentParticipants.map((participant) => {
+                const probability =
+                  totalChances > 0
+                    ? ((participant.chances / totalChances) * 100).toFixed(2)
+                    : "0.00";
+
+                return (
+                  <tr key={participant.id} className="hover:bg-slate-700/30 transition-colors">
+                    <td className="px-6 py-4 text-slate-400 text-sm">{participant.id.slice(0, 8)}</td>
+                    <td className="px-6 py-4 text-white">{participant.name}</td>
+                    <td className="px-6 py-4 text-white">{participant.chances}x</td>
+                    <td className="px-6 py-4 text-cyan-400 font-medium">{probability}%</td>
+                    <td className="px-6 py-4">
+                      {participant.drawn ? (
+                        <span className="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-sm">
+                          Drawn
+                        </span>
+                      ) : (
+                        <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm">
+                          Not Drawn
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => alert(`Edit ${participant.name}`)}
+                          className="p-2 hover:bg-slate-600 rounded-lg transition-colors"
+                        >
+                          <Edit className="w-4 h-4 text-blue-400" />
+                        </button>
+                        <button
+                          onClick={() => alert(`Delete ${participant.name}`)}
+                          className="p-2 hover:bg-slate-600 rounded-lg transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4 text-red-400" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* 🔢 Pagination */}
+      <div className="flex items-center justify-between p-4 border-t border-slate-700">
+        <p className="text-slate-400 text-sm">
+          Page {currentPage} of {totalPages || 1}
+        </p>
+        <div className="flex gap-2">
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+            className="px-3 py-2 bg-slate-700 text-white rounded-lg disabled:opacity-30"
+          >
+            Prev
+          </button>
+          <button
+            disabled={currentPage === totalPages || totalPages === 0}
+            onClick={() => setCurrentPage((p) => p + 1)}
+            className="px-3 py-2 bg-slate-700 text-white rounded-lg disabled:opacity-30"
+          >
+            Next
+          </button>
+        </div>
+      </div>
+    </div>
           </div>
         )}
 
@@ -946,8 +997,8 @@ interface AdminDashboardProps {
                             </td>
                             <td className="px-6 py-4">
                               <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs ${log.mode === 'pre-selected'
-                                  ? 'bg-purple-500/20 text-purple-400 border border-purple-500/50'
-                                  : 'bg-green-500/20 text-green-400 border border-green-500/50'
+                                ? 'bg-purple-500/20 text-purple-400 border border-purple-500/50'
+                                : 'bg-green-500/20 text-green-400 border border-green-500/50'
                                 }`}>
                                 {log.mode === 'pre-selected' ? 'Pre-selected Prize' : 'Random Draw'}
                               </span>
