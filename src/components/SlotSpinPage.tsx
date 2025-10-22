@@ -476,39 +476,44 @@ export function SlotSpinPage({ isDemoMode, onBack }: SlotSpinPageProps) {
 
   const preSelectedPrizeObj = prizes.find((p) => p.id === preSelectedPrizeId);
 
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+    <div
+      className="min-h-screen relative overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900"
+      style={{
+        backgroundImage: `url(${bgImage})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
+      {/* Overlay hitam transparan biar teks tetap terbaca */}
       <div className="absolute inset-0 bg-black/40"></div>
 
       {/* Part 1 - Settings */}
       {currentPart === 1 && (
         <div className="absolute inset-0 z-20 animate-in fade-in slide-in-from-right duration-700">
           <div className="relative z-10 p-6 flex items-center justify-between">
-            <Button
-              onClick={onBack}
-              variant="ghost"
-              className="text-white hover:text-white hover:bg-white/20 border border-white/30"
-            >
-              <ArrowLeft className="w-5 h-5 mr-2" />
-              Back to Dashboard
-            </Button>
-            <div className="text-center">
-              <h1 className="text-white text-3xl drop-shadow-lg">Slot Spin Settings</h1>
-              <p className="text-white/80 text-sm mt-1">Configure your spin event</p>
-            </div>
-            <Button
-              onClick={fetchData}
-              variant="ghost"
-              className="text-white hover:text-white hover:bg-white/20 border border-white/30"
-              disabled={isSpinning}
-            >
-              <RefreshCw className="w-5 h-5 mr-2" />
-              Refresh List
-            </Button>
-          </div>
+  <Button
+    onClick={onBack}
+    variant="ghost"
+    className="text-white hover:text-white hover:bg-white/20 border border-white/30"
+  >
+    <ArrowLeft className="w-5 h-5 mr-2" />
+    Back to Dashboard
+  </Button>
+
+  <div className="text-center">
+    <h1 className="text-white text-3xl drop-shadow-lg">Slot Spin Settings</h1>
+    <p className="text-white/80 text-sm mt-1">Configure your spin event</p>
+  </div>
+
+  {/* Placeholder untuk menjaga layout agar tetap seimbang */}
+  <div className="w-[150px]" />
+</div>
 
           <div className="relative z-10 flex gap-6 p-8 h-[calc(100vh-120px)]">
-            <div className="flex-1 flex flex-col items-center justify-start">
+            <div className="flex-[0.4] flex flex-col items-center justify-start">
               <div className="mb-6 bg-black/20 backdrop-blur-sm rounded-2xl p-6 border border-white/20 w-full max-w-4xl">
                 <p className="text-white text-center mb-4 text-lg">Select Prize</p>
                 <div className="flex items-center justify-center gap-3">
@@ -565,21 +570,21 @@ export function SlotSpinPage({ isDemoMode, onBack }: SlotSpinPageProps) {
               </Button>
             </div>
 
-            <div className="w-96 bg-black/20 backdrop-blur-sm rounded-2xl p-6 border border-white/20 overflow-hidden flex flex-col max-h-[calc(100vh-180px)]">
-              <h2 className="text-white text-xl mb-4 flex items-center gap-2">
+            <div className="flex-[0.6] flex flex-col max-h-[calc(100vh-180px)] bg-black/20 backdrop-blur-sm rounded-2xl p-6 border border-white/20 overflow-hidden w-full">
+              <h2 className="text-white text-xl mb-4 flex items-center gap-2 w-full">
                 <Trophy className="w-5 h-5" />
-                Spin History
+                <span className="truncate">Spin History</span>
               </h2>
 
               {spinEvents.length > 0 && (
-                <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+                <div className="flex flex-wrap gap-2 mb-4 overflow-x-auto pb-2 w-full">
                   {spinEvents.map((event, index) => (
                     <button
                       key={event.id}
                       onClick={() => setActiveEventTab(index)}
                       className={`px-4 py-2 rounded-lg whitespace-nowrap transition-all ${activeEventTab === index
-                        ? "bg-purple-500 text-white"
-                        : "bg-white/10 text-white/70 hover:bg-white/20"
+                          ? "bg-purple-500 text-white"
+                          : "bg-white/10 text-white/70 hover:bg-white/20"
                         }`}
                     >
                       Event {spinEvents.length - index} ({event.count}x)
@@ -588,14 +593,14 @@ export function SlotSpinPage({ isDemoMode, onBack }: SlotSpinPageProps) {
                 </div>
               )}
 
-              <div className="flex-1 overflow-y-auto space-y-3 pr-2">
+              <div className="flex-1 overflow-y-auto space-y-3 pr-2 w-full">
                 {spinEvents.length === 0 ? (
                   <p className="text-white/50 text-center py-8">No spins yet</p>
                 ) : (
                   spinEvents[activeEventTab]?.results.map((result) => (
                     <div
                       key={result.id}
-                      className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 hover:bg-white/15 transition-colors"
+                      className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 hover:bg-white/15 transition-colors w-full"
                     >
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex-1">
