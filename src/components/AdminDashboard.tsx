@@ -734,7 +734,7 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewSlotSp
                       className="bg-slate-900 border-slate-700 text-white"
                     />
                   </div>
-                  <div>
+                  {/* <div>
                     <Label>Weight (Probability)</Label>
                     <Input
                       type="number"
@@ -747,7 +747,7 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewSlotSp
                     <p className="text-slate-400 text-sm mt-1">
                       Weight 1-100. Higher weight = higher probability.
                     </p>
-                  </div>
+                  </div> */}
                   <div>
                     <Label>Quantity (Stock Available)</Label>
                     <Input
@@ -791,9 +791,9 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewSlotSp
                     <tr>
                       <th className="px-6 py-4 text-left text-slate-300">ID</th>
                       <th className="px-6 py-4 text-left text-slate-300">Prize Name</th>
-                      <th className="px-6 py-4 text-left text-slate-300">Weight</th>
+                      {/* <th className="px-6 py-4 text-left text-slate-300">Weight</th> */}
                       <th className="px-6 py-4 text-left text-slate-300">Quantity</th>
-                      <th className="px-6 py-4 text-left text-slate-300">Probability</th>
+                      {/* <th className="px-6 py-4 text-left text-slate-300">Probability</th> */}
                       <th className="px-6 py-4 text-left text-slate-300">Actions</th>
                     </tr>
                   </thead>
@@ -806,19 +806,19 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewSlotSp
                       </tr>
                     ) : (
                       prizes.map((prize) => {
-                        const totalWeight = prizes.reduce((sum, p) => sum + p.weight, 0);
-                        const probability = ((prize.weight / totalWeight) * 100).toFixed(1);
+                        // const totalWeight = prizes.reduce((sum, p) => sum + p.weight, 0);
+                        // const probability = ((prize.weight / totalWeight) * 100).toFixed(1);
                         return (
                           <tr key={prize.id} className="hover:bg-slate-700/30 transition-colors">
                             <td className="px-6 py-4 text-slate-400 text-sm">{prize.id.slice(0, 8)}</td>
                             <td className="px-6 py-4 text-white">{prize.name}</td>
-                            <td className="px-6 py-4 text-white">{prize.weight}</td>
+                            {/* <td className="px-6 py-4 text-white">{prize.weight}</td> */}
                             <td className="px-6 py-4">
                               <span className={`${prize.quantity === 0 ? 'text-red-400' : 'text-cyan-400'}`}>
                                 {prize.quantity}
                               </span>
                             </td>
-                            <td className="px-6 py-4 text-green-400">{probability}%</td>
+                            {/* <td className="px-6 py-4 text-green-400">{probability}%</td> */}
                             <td className="px-6 py-4">
                               <div className="flex gap-2">
                                 <button
