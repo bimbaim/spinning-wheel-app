@@ -36,11 +36,12 @@ interface AdminDashboardProps {
   accessToken: string;
   isDemoMode: boolean;
   onLogout: () => void;
-  onViewEvent: () => void;
+  // onViewEvent: () => void;
   onViewSlotSpin: () => void;
 }
 
-export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent, onViewSlotSpin }: AdminDashboardProps) {
+// export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent, onViewSlotSpin }: AdminDashboardProps) {
+  export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewSlotSpin }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<'participants' | 'prizes' | 'logs' | 'slot-logs'>('participants');
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [prizes, setPrizes] = useState<Prize[]>([]);
@@ -432,13 +433,13 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent,
           </button>
 
           <div className="pt-4 border-t border-slate-700 space-y-2">
-            <button
+            {/* <button
               onClick={onViewEvent}
               className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700 transition-all"
             >
               <Monitor className="w-5 h-5" />
               <span>Prize Wheel Event</span>
-            </button>
+            </button> */}
 
             <button
               onClick={onViewSlotSpin}
@@ -562,69 +563,89 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewEvent,
             </div>
 
             <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-slate-700/50">
-                    <tr>
-                      <th className="px-6 py-4 text-left text-slate-300">ID</th>
-                      <th className="px-6 py-4 text-left text-slate-300">Participant Name</th>
-                      <th className="px-6 py-4 text-left text-slate-300">Chances (x)</th>
-                      <th className="px-6 py-4 text-left text-slate-300">Status</th>
-                      <th className="px-6 py-4 text-left text-slate-300">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-700">
-                    {participants.length === 0 ? (
-                      <tr>
-                        <td colSpan={5} className="px-6 py-8 text-center text-slate-400">
-                          No participants yet. Click &quot;Add Participant&quot; button to start.
-                        </td>
-                      </tr>
-                    ) : (
-                      participants.map((participant) => (
-                        <tr key={participant.id} className="hover:bg-slate-700/30 transition-colors">
-                          <td className="px-6 py-4 text-slate-400 text-sm">{participant.id.slice(0, 8)}</td>
-                          <td className="px-6 py-4 text-white">{participant.name}</td>
-                          <td className="px-6 py-4 text-white">{participant.chances}x</td>
-                          <td className="px-6 py-4">
-                            {participant.drawn ? (
-                              <span className="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-sm">
-                                Drawn
-                              </span>
-                            ) : (
-                              <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm">
-                                Not Drawn
-                              </span>
-                            )}
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => {
-                                  setEditingParticipant(participant);
-                                  setParticipantName(participant.name);
-                                  setParticipantChances(participant.chances.toString());
-                                  setIsParticipantDialogOpen(true);
-                                }}
-                                className="p-2 hover:bg-slate-600 rounded-lg transition-colors"
-                              >
-                                <Edit className="w-4 h-4 text-blue-400" />
-                              </button>
-                              <button
-                                onClick={() => handleDeleteParticipant(participant.id)}
-                                className="p-2 hover:bg-slate-600 rounded-lg transition-colors"
-                              >
-                                <Trash2 className="w-4 h-4 text-red-400" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+  <div className="overflow-x-auto">
+    <table className="w-full">
+      <thead className="bg-slate-700/50">
+        <tr>
+          <th className="px-6 py-4 text-left text-slate-300">ID</th>
+          <th className="px-6 py-4 text-left text-slate-300">Participant Name</th>
+          <th className="px-6 py-4 text-left text-slate-300">Chances (x)</th>
+          {/* New Column Header: Probability */}
+          <th className="px-6 py-4 text-left text-slate-300">Probability</th>
+          <th className="px-6 py-4 text-left text-slate-300">Status</th>
+          <th className="px-6 py-4 text-left text-slate-300">Actions</th>
+        </tr>
+      </thead>
+      <tbody className="divide-y divide-slate-700">
+        {participants.length === 0 ? (
+          <tr>
+            {/* Increase colSpan to 6 for the new column */}
+            <td colSpan={6} className="px-6 py-8 text-center text-slate-400">
+              No participants yet. Click &quot;Add Participant&quot; button to start.
+            </td>
+          </tr>
+        ) : (
+          participants.map((participant) => {
+            // Calculate totalChances inside the map or pass it down as a prop
+            // For this example, let's assume `totalChances` is available in the scope.
+            const totalChances = participants.reduce((sum, p) => sum + p.chances, 0);
+            
+            // Calculate probability as a percentage
+            const probability = totalChances > 0 
+              ? ((participant.chances / totalChances) * 100).toFixed(2) // To 2 decimal places
+              : '0.00';
+            
+            return (
+              <tr key={participant.id} className="hover:bg-slate-700/30 transition-colors">
+                <td className="px-6 py-4 text-slate-400 text-sm">{participant.id.slice(0, 8)}</td>
+                <td className="px-6 py-4 text-white">{participant.name}</td>
+                <td className="px-6 py-4 text-white">{participant.chances}x</td>
+                
+                {/* New Column Data: Probability */}
+                <td className="px-6 py-4 text-cyan-400 font-medium">
+                  {probability}%
+                </td>
+                
+                <td className="px-6 py-4">
+                  {participant.drawn ? (
+                    <span className="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-sm">
+                      Drawn
+                    </span>
+                  ) : (
+                    <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm">
+                      Not Drawn
+                    </span>
+                  )}
+                </td>
+                <td className="px-6 py-4">
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        setEditingParticipant(participant);
+                        setParticipantName(participant.name);
+                        setParticipantChances(participant.chances.toString());
+                        setIsParticipantDialogOpen(true);
+                      }}
+                      className="p-2 hover:bg-slate-600 rounded-lg transition-colors"
+                    >
+                      <Edit className="w-4 h-4 text-blue-400" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteParticipant(participant.id)}
+                      className="p-2 hover:bg-slate-600 rounded-lg transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4 text-red-400" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            );
+          })
+        )}
+      </tbody>
+    </table>
+  </div>
+</div>
           </div>
         )}
 
