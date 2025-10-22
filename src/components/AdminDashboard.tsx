@@ -418,7 +418,7 @@ interface AdminDashboardProps {
               }`}
           >
             <FileText className="w-5 h-5" />
-            <span>Prize Wheel Logs</span>
+            <span>Prize Logs</span>
           </button>
 
           <button
