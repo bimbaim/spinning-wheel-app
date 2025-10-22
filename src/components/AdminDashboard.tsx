@@ -36,7 +36,7 @@ interface AdminDashboardProps {
   accessToken: string;
   isDemoMode: boolean;
   onLogout: () => void;
-  // onViewEvent: () => void;
+  onViewEvent: () => void;
   onViewSlotSpin: () => void;
 }
 
@@ -558,7 +558,7 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewSlotSp
                     />
                   </div>
                   <div>
-                    <Label>Chances (Number of Spins)</Label>
+                    <Label>Chances (The higher chances the higher name of selected)</Label>
                     <Input
                       type="number"
                       min="1"
@@ -653,13 +653,19 @@ export function AdminDashboard({ accessToken, isDemoMode, onLogout, onViewSlotSp
                     <td className="px-6 py-4">
                       <div className="flex gap-2">
                         <button
-                          onClick={() => alert(`Edit ${participant.name}`)}
+                          // onClick={() => alert(`Edit ${participant.name}`)}
+                          onClick={() => {
+                            setEditingParticipant(participant); // 1. Set the participant to be edited
+                            setParticipantName(participant.name); // 2. Populate name input
+                            setParticipantChances(String(participant.chances)); // 3. Populate chances input (convert number to string)
+                            setIsParticipantDialogOpen(true); // 4. Open the dialog
+                          }}
                           className="p-2 hover:bg-slate-600 rounded-lg transition-colors"
                         >
                           <Edit className="w-4 h-4 text-blue-400" />
                         </button>
                         <button
-                          onClick={() => alert(`Delete ${participant.name}`)}
+                          onClick={() => handleDeleteParticipant(participant.id)}
                           className="p-2 hover:bg-slate-600 rounded-lg transition-colors"
                         >
                           <Trash2 className="w-4 h-4 text-red-400" />

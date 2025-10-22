@@ -146,6 +146,7 @@ export default function App() {
       {view === 'slot-spin' && (
         <SlotSpinPage
           isDemoMode={isDemoMode}
+          accessToken={accessToken}
           onBack={() => setView('dashboard')}
         />
       )}

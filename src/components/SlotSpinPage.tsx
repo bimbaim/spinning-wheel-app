@@ -41,11 +41,12 @@ interface SpinEvent {
 interface SlotSpinPageProps {
   isDemoMode: boolean;
   onBack: () => void;
+  accessToken: string;
 }
 
 type SpinMode = "random" | "pre-selected";
 
-export function SlotSpinPage({ isDemoMode, onBack }: SlotSpinPageProps) {
+export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPageProps) {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [prizes, setPrizes] = useState<Prize[]>([]);
   const [initialPrizes, setInitialPrizes] = useState<Prize[]>([]);
@@ -136,10 +137,10 @@ export function SlotSpinPage({ isDemoMode, onBack }: SlotSpinPageProps) {
       } else {
         const [participantsRes, prizesRes] = await Promise.all([
           fetch(`${apiUrl}/participants`, {
-            headers: { Authorization: `Bearer ${publicAnonKey}` },
+            headers: { Authorization: `Bearer ${accessToken}` },
           }),
           fetch(`${apiUrl}/prizes`, {
-            headers: { Authorization: `Bearer ${publicAnonKey}` },
+            headers: { Authorization: `Bearer ${accessToken}` },
           }),
         ]);
 
@@ -180,7 +181,7 @@ export function SlotSpinPage({ isDemoMode, onBack }: SlotSpinPageProps) {
         await fetch(`${apiUrl}/prizes/${prizeId}`, {
           method: "PUT",
           headers: {
-            Authorization: `Bearer ${publicAnonKey}`,
+            Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ quantity: newQuantity }),
@@ -199,7 +200,7 @@ export function SlotSpinPage({ isDemoMode, onBack }: SlotSpinPageProps) {
         await fetch(`${apiUrl}/participants/${participantId}`, {
           method: "PUT",
           headers: {
-            Authorization: `Bearer ${publicAnonKey}`,
+            Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ drawn: true }),
@@ -228,7 +229,7 @@ export function SlotSpinPage({ isDemoMode, onBack }: SlotSpinPageProps) {
         await fetch(`${apiUrl}/slot-spin/save`, {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${publicAnonKey}`,
+            Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify(logEntry),
