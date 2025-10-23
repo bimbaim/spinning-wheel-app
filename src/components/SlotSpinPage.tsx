@@ -440,191 +440,336 @@ export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPagePr
   }
 
 
+  // const handleMultiSpin = async () => {
+  //   if (participants.length === 0 || prizes.length === 0 || !preSelectedPrizeId) return;
+
+  //   const count = parseInt(spinCount);
+  //   const eventResults: SpinResult[] = [];
+
+  //   setIsSpinning(true);
+  //   spinSound.current?.play().catch(() => { });
+  //   setTimeout(() => {
+  //     triggerFlashingEffect();
+  //   }, 50);
+  //   // burst every few milliseconds while spinning
+  //   const holeInterval = setInterval(() => {
+  //     addBulletHolesBurst(10); // 2–3 new holes each tick
+  //   }, 150);
+
+  //   setTimeout(() => clearInterval(holeInterval), 1000); // stop after 1s or when spin ends
+
+  //   const totalParticipants = participants.length;
+  //   const duration = 4000;
+  //   const baseRotations = 6;
+
+  //   // 🔥 Gunakan array sementara agar tidak duplikat
+  //   let availableParticipants = [...participants];
+
+  //   const animations = roulettes.map((roulette: any, index: number) => {
+  //     return new Promise<{ participant: Participant; prize: Prize } | null>((resolve) => {
+  //       if (availableParticipants.length === 0) {
+  //         resolve(null);
+  //         return;
+  //       }
+
+  //       // Hitung total peluang
+  //       const totalChance = availableParticipants.reduce((sum, p) => sum + (p.chances ?? 1), 0);
+  //       let rand = Math.random() * totalChance;
+  //       let selectedPart = availableParticipants[0];
+  //       for (const p of availableParticipants) {
+  //         rand -= p.chances ?? 1;
+  //         if (rand <= 0) {
+  //           selectedPart = p;
+  //           break;
+  //         }
+  //       }
+
+  //       // 🧹 Hapus dari pool agar tidak terpilih lagi
+  //       availableParticipants = availableParticipants.filter(p => p.id !== selectedPart.id);
+
+  //       const selectedPrz = prizes.find((p) => p.id === preSelectedPrizeId);
+  //       if (!selectedPrz) {
+  //         resolve(null);
+  //         return;
+  //       }
+
+  //       const normalizedPartStart = normalizeSlotPos(0, totalParticipants);
+  //       const finalPartPosition = normalizedPartStart + baseRotations * totalParticipants + participants.indexOf(selectedPart);
+
+  //       let startTime: number | null = null;
+  //       const animate = (timestamp: number) => {
+  //         if (!startTime) startTime = timestamp;
+  //         const elapsed = timestamp - startTime;
+  //         const progress = Math.min(elapsed / duration, 1);
+  //         const easeOut = 1 - Math.pow(1 - progress, 3);
+  //         const currentPartPos = normalizedPartStart + easeOut * (finalPartPosition - normalizedPartStart);
+
+  //         setRoulettes((prev) =>
+  //           prev.map((r, i) =>
+  //             i === index ? { ...r, participantSlotPos: currentPartPos } : r
+  //           )
+  //         );
+
+  //         if (progress < 1) {
+  //           animationRefs.current[index] = requestAnimationFrame(animate);
+  //         } else {
+  //           setRoulettes((prev) =>
+  //             prev.map((r, i) =>
+  //               i === index
+  //                 ? {
+  //                   ...r,
+  //                   participantSlotPos: finalPartPosition,
+  //                   selectedParticipant: selectedPart,
+  //                   selectedPrize: selectedPrz,
+  //                   showResult: true,
+  //                 }
+  //                 : r
+  //             )
+  //           );
+  //           resolve({ participant: selectedPart, prize: selectedPrz });
+  //         }
+  //       };
+
+  //       animationRefs.current[index] = requestAnimationFrame(animate);
+  //     });
+  //   });
+
+  //   const results = await Promise.all(animations);
+
+  //   spinSound.current?.pause();
+  //   if (spinSound.current) spinSound.current.currentTime = 0;
+  //   winSound.current?.play().catch(() => { });
+
+  //   // 🎉 Confetti burst per pemenang
+  //   results.forEach((result, index) => {
+  //     if (result) {
+  //       // Delay tiap spin biar berurutan
+  //       setTimeout(() => {
+  //         // Loop untuk membuat beberapa ledakan confetti sekaligus
+  //         for (let i = 0; i < 3; i++) {
+  //           confetti({
+  //             particleCount: 80 + Math.random() * 60, // banyak partikel acak
+  //             angle: 60 + Math.random() * 60, // sudut acak kiri-kanan
+  //             spread: 60 + Math.random() * 20, // sebaran acak
+  //             origin: { x: Math.random(), y: Math.random() * 0.6 + 0.2 }, // posisi acak di layar
+  //             colors: ["#ff0", "#f0f", "#0ff", "#0f0", "#fff", "#f90", "#09f"],
+  //             scalar: 0.8 + Math.random() * 1.2, // ukuran acak
+  //             decay: 0.85,      // lebih cepat hilang
+  //             ticks: 150,       // lebih sedikit frame → lebih cepat
+  //             gravity: 0.8,     // jatuh lebih cepat
+  //           });
+  //         }
+  //       }, index * 400); // delay tiap roulette
+  //     }
+  //   });
+
+
+
+  //   results.forEach((result) => {
+  //     if (result) {
+  //       const newResult: SpinResult = {
+  //         id: Date.now().toString() + Math.random(),
+  //         participant: result.participant,
+  //         prize: result.prize,
+  //         timestamp: new Date().toISOString(),
+  //       };
+  //       eventResults.push(newResult);
+
+  //       // updatePrizeQuantity(result.prize.id, result.prize.quantity - 1);
+
+  //       const prizeSpinCounts: Record<string, number> = {};
+  //       results.forEach(result => {
+  //         if (result) {
+  //           prizeSpinCounts[result.prize.id] = (prizeSpinCounts[result.prize.id] || 0) + 1;
+  //         }
+  //       });
+
+  //       // Update quantity sekali per prize
+  //       for (const prizeId in prizeSpinCounts) {
+  //         const qtyToDeduct = prizeSpinCounts[prizeId];
+  //         const prize = prizes.find(p => p.id === prizeId);
+  //         if (prize) {
+  //           updatePrizeQuantity(prizeId, prize.quantity - qtyToDeduct);
+  //         }
+  //       }
+
+  //       markParticipantDrawn(result.participant.id);
+  //       saveToHistory(result.participant, result.prize);
+
+  //       setPrizes((prev) =>
+  //         prev.map((p) =>
+  //           p.id === result.prize.id ? { ...p, quantity: p.quantity - 1 } : p
+  //         ).filter((p) => p.quantity > 0)
+  //       );
+
+  //       setParticipants((prev) =>
+  //         prev.filter((p) => p.id !== result.participant.id)
+  //       );
+  //     }
+  //   });
+
+  //   const newEvent: SpinEvent = {
+  //     id: Date.now().toString(),
+  //     count: count,
+  //     results: eventResults,
+  //     timestamp: new Date().toISOString(),
+  //   };
+
+  //   setSpinEvents((prev) => [newEvent, ...prev]);
+  //   setSpinHistory((prev) => [...eventResults, ...prev]);
+  //   setActiveEventTab(0);
+  //   setIsSpinning(false);
+
+  //   // setTimeout(() => {
+  //   //   goToPart1();
+  //   // }, 2000);
+  // };
+
   const handleMultiSpin = async () => {
-    if (participants.length === 0 || prizes.length === 0 || !preSelectedPrizeId) return;
+  if (participants.length === 0 || prizes.length === 0 || !preSelectedPrizeId) return;
 
-    const count = parseInt(spinCount);
-    const eventResults: SpinResult[] = [];
+  const count = parseInt(spinCount);
+  const eventResults: SpinResult[] = [];
 
-    setIsSpinning(true);
-    spinSound.current?.play().catch(() => { });
-    setTimeout(() => {
-      triggerFlashingEffect();
-    }, 50);
-    // burst every few milliseconds while spinning
-    const holeInterval = setInterval(() => {
-      addBulletHolesBurst(10); // 2–3 new holes each tick
-    }, 150);
+  setIsSpinning(true);
+  spinSound.current?.play().catch(() => {});
+  setTimeout(() => triggerFlashingEffect(), 50);
+  const holeInterval = setInterval(() => addBulletHolesBurst(10), 150);
+  setTimeout(() => clearInterval(holeInterval), 1000);
 
-    setTimeout(() => clearInterval(holeInterval), 1000); // stop after 1s or when spin ends
+  const totalParticipants = participants.length;
+  const baseRotations = 6;
 
-    const totalParticipants = participants.length;
-    const duration = 4000;
-    const baseRotations = 6;
+  let availableParticipants = [...participants];
 
-    // 🔥 Gunakan array sementara agar tidak duplikat
-    let availableParticipants = [...participants];
+  const promises = roulettes.map((roulette, index) => {
+    if (availableParticipants.length === 0) return Promise.resolve(null);
 
-    const animations = roulettes.map((roulette: any, index: number) => {
-      return new Promise<{ participant: Participant; prize: Prize } | null>((resolve) => {
-        if (availableParticipants.length === 0) {
-          resolve(null);
-          return;
-        }
+    // Pilih peserta
+    const totalChance = availableParticipants.reduce((sum, p) => sum + (p.chances ?? 1), 0);
+    let rand = Math.random() * totalChance;
+    let selectedPart = availableParticipants[0];
+    for (const p of availableParticipants) {
+      rand -= p.chances ?? 1;
+      if (rand <= 0) {
+        selectedPart = p;
+        break;
+      }
+    }
+    availableParticipants = availableParticipants.filter(p => p.id !== selectedPart.id);
 
-        // Hitung total peluang
-        const totalChance = availableParticipants.reduce((sum, p) => sum + (p.chances ?? 1), 0);
-        let rand = Math.random() * totalChance;
-        let selectedPart = availableParticipants[0];
-        for (const p of availableParticipants) {
-          rand -= p.chances ?? 1;
-          if (rand <= 0) {
-            selectedPart = p;
-            break;
-          }
-        }
+    const selectedPrz = prizes.find(p => p.id === preSelectedPrizeId);
+    if (!selectedPrz) return Promise.resolve(null);
 
-        // 🧹 Hapus dari pool agar tidak terpilih lagi
-        availableParticipants = availableParticipants.filter(p => p.id !== selectedPart.id);
+    const normalizedPartStart = normalizeSlotPos(0, totalParticipants);
+    const finalPartPosition = normalizedPartStart + baseRotations * totalParticipants + participants.indexOf(selectedPart);
 
-        const selectedPrz = prizes.find((p) => p.id === preSelectedPrizeId);
-        if (!selectedPrz) {
-          resolve(null);
-          return;
-        }
+    // durasi animasi tiap roulette lebih panjang untuk roulette yang di kanan
+    const duration = 3500 + index * 400; // roulette pertama 3.5s, kedua +0.4s, dst
 
-        const normalizedPartStart = normalizeSlotPos(0, totalParticipants);
-        const finalPartPosition = normalizedPartStart + baseRotations * totalParticipants + participants.indexOf(selectedPart);
+    return new Promise<{ participant: Participant; prize: Prize } | null>((resolve) => {
+      let startTime: number | null = null;
 
-        let startTime: number | null = null;
-        const animate = (timestamp: number) => {
-          if (!startTime) startTime = timestamp;
-          const elapsed = timestamp - startTime;
-          const progress = Math.min(elapsed / duration, 1);
-          const easeOut = 1 - Math.pow(1 - progress, 3);
-          const currentPartPos = normalizedPartStart + easeOut * (finalPartPosition - normalizedPartStart);
+      const animate = (timestamp: number) => {
+        if (!startTime) startTime = timestamp;
+        const elapsed = timestamp - startTime!;
+        const progress = Math.min(elapsed / duration, 1);
+        const easeOut = 1 - Math.pow(1 - progress, 3); // cubic ease-out
+        const currentPartPos = normalizedPartStart + easeOut * (finalPartPosition - normalizedPartStart);
 
-          setRoulettes((prev) =>
+        setRoulettes(prev =>
+          prev.map((r, i) => i === index ? { ...r, participantSlotPos: currentPartPos } : r)
+        );
+
+        if (progress < 1) {
+          animationRefs.current[index] = requestAnimationFrame(animate);
+        } else {
+          // Roulette berhenti, tampilkan hasil
+          setRoulettes(prev =>
             prev.map((r, i) =>
-              i === index ? { ...r, participantSlotPos: currentPartPos } : r
-            )
-          );
-
-          if (progress < 1) {
-            animationRefs.current[index] = requestAnimationFrame(animate);
-          } else {
-            setRoulettes((prev) =>
-              prev.map((r, i) =>
-                i === index
-                  ? {
+              i === index
+                ? {
                     ...r,
                     participantSlotPos: finalPartPosition,
                     selectedParticipant: selectedPart,
                     selectedPrize: selectedPrz,
                     showResult: true,
                   }
-                  : r
-              )
-            );
-            resolve({ participant: selectedPart, prize: selectedPrz });
-          }
-        };
+                : r
+            )
+          );
 
-        animationRefs.current[index] = requestAnimationFrame(animate);
-      });
-    });
-
-    const results = await Promise.all(animations);
-
-    spinSound.current?.pause();
-    if (spinSound.current) spinSound.current.currentTime = 0;
-    winSound.current?.play().catch(() => { });
-
-    // 🎉 Confetti burst per pemenang
-    results.forEach((result, index) => {
-      if (result) {
-        // Delay tiap spin biar berurutan
-        setTimeout(() => {
-          // Loop untuk membuat beberapa ledakan confetti sekaligus
-          for (let i = 0; i < 3; i++) {
+          // confetti dramatis saat berhenti
+          for (let i = 0; i < 4; i++) {
             confetti({
-              particleCount: 80 + Math.random() * 60, // banyak partikel acak
-              angle: 60 + Math.random() * 60, // sudut acak kiri-kanan
-              spread: 60 + Math.random() * 20, // sebaran acak
-              origin: { x: Math.random(), y: Math.random() * 0.6 + 0.2 }, // posisi acak di layar
+              particleCount: 80 + Math.random() * 60,
+              angle: 55 + Math.random() * 50,
+              spread: 60 + Math.random() * 30,
+              origin: { x: Math.random(), y: Math.random() * 0.6 + 0.2 },
               colors: ["#ff0", "#f0f", "#0ff", "#0f0", "#fff", "#f90", "#09f"],
-              scalar: 0.8 + Math.random() * 1.2, // ukuran acak
-              decay: 0.85,      // lebih cepat hilang
-              ticks: 150,       // lebih sedikit frame → lebih cepat
-              gravity: 0.8,     // jatuh lebih cepat
+              scalar: 0.8 + Math.random() * 1.5,
+              decay: 0.85,
+              ticks: 160,
+              gravity: 0.85,
             });
           }
-        }, index * 400); // delay tiap roulette
-      }
-    });
 
-
-
-    results.forEach((result) => {
-      if (result) {
-        const newResult: SpinResult = {
-          id: Date.now().toString() + Math.random(),
-          participant: result.participant,
-          prize: result.prize,
-          timestamp: new Date().toISOString(),
-        };
-        eventResults.push(newResult);
-
-        // updatePrizeQuantity(result.prize.id, result.prize.quantity - 1);
-
-        const prizeSpinCounts: Record<string, number> = {};
-        results.forEach(result => {
-          if (result) {
-            prizeSpinCounts[result.prize.id] = (prizeSpinCounts[result.prize.id] || 0) + 1;
-          }
-        });
-
-        // Update quantity sekali per prize
-        for (const prizeId in prizeSpinCounts) {
-          const qtyToDeduct = prizeSpinCounts[prizeId];
-          const prize = prizes.find(p => p.id === prizeId);
-          if (prize) {
-            updatePrizeQuantity(prizeId, prize.quantity - qtyToDeduct);
-          }
+          resolve({ participant: selectedPart, prize: selectedPrz });
         }
+      };
 
-        markParticipantDrawn(result.participant.id);
-        saveToHistory(result.participant, result.prize);
-
-        setPrizes((prev) =>
-          prev.map((p) =>
-            p.id === result.prize.id ? { ...p, quantity: p.quantity - 1 } : p
-          ).filter((p) => p.quantity > 0)
-        );
-
-        setParticipants((prev) =>
-          prev.filter((p) => p.id !== result.participant.id)
-        );
-      }
+      animationRefs.current[index] = requestAnimationFrame(animate);
     });
+  });
 
-    const newEvent: SpinEvent = {
-      id: Date.now().toString(),
-      count: count,
-      results: eventResults,
+  const results = await Promise.all(promises);
+
+  spinSound.current?.pause();
+  if (spinSound.current) spinSound.current.currentTime = 0;
+  winSound.current?.play().catch(() => {});
+
+  // Update prize, participant, history
+  results.forEach((result) => {
+    if (!result) return;
+
+    const newResult: SpinResult = {
+      id: Date.now().toString() + Math.random(),
+      participant: result.participant,
+      prize: result.prize,
       timestamp: new Date().toISOString(),
     };
+    eventResults.push(newResult);
 
-    setSpinEvents((prev) => [newEvent, ...prev]);
-    setSpinHistory((prev) => [...eventResults, ...prev]);
-    setActiveEventTab(0);
-    setIsSpinning(false);
+    updatePrizeQuantity(result.prize.id, result.prize.quantity - 1);
+    markParticipantDrawn(result.participant.id);
 
-    // setTimeout(() => {
-    //   goToPart1();
-    // }, 2000);
+    setPrizes(prev =>
+      prev.map(p =>
+        p.id === result.prize.id ? { ...p, quantity: p.quantity - 1 } : p
+      ).filter(p => p.quantity > 0)
+    );
+
+    setParticipants(prev =>
+      prev.filter(p => p.id !== result.participant.id)
+    );
+
+    saveToHistory(result.participant, result.prize);
+  });
+
+  const newEvent: SpinEvent = {
+    id: Date.now().toString(),
+    count,
+    results: eventResults,
+    timestamp: new Date().toISOString(),
   };
 
+  setSpinEvents(prev => [newEvent, ...prev]);
+  setSpinHistory(prev => [...eventResults, ...prev]);
+  setActiveEventTab(0);
+  setIsSpinning(false);
+};
+
+  
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (e.key === "Enter") {
@@ -652,7 +797,7 @@ export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPagePr
 
   const preSelectedPrizeObj = prizes.find((p) => p.id === preSelectedPrizeId);
 
-
+  const isDisabled = isSpinning || roulettes.every(r => r.showResult);
   return (
 
     <>
@@ -945,15 +1090,22 @@ export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPagePr
             </div>
             {/* 📱 Spin Button only for mobile & tablet (Up to large screens) */}
             <div className="mt-8 flex justify-center lg:hidden mobile-tablet-only">
-              <button
-                onClick={() => {
-                  if (!isSpinning && roulettes.length > 0) handleMultiSpin();
-                }}
-                className={`spin-button ${isSpinning || roulettes.every(r => r.showResult) ? "disabled" : ""}`}
-              >
-                🎯 Spin Now!
-              </button>
+              <div className="squid-game-container">
+                <button
+                  onClick={() => {
+    // Note: You technically don't need this 'if' check now,
+    // but it's fine to keep it as a safeguard.
+                    if (!isSpinning && roulettes.length > 0) handleMultiSpin();
+                  }}
+                  // *** THIS IS THE CRITICAL CHANGE ***
+                  className="squid-game-button"
+                  disabled={isDisabled}
+                >
+                  O
+                </button>
+              </div>
             </div>
+
 
           </div>
         )}

@@ -4027,35 +4027,53 @@ html {
   word-break: break-word;    /* For older browsers */
 }
 
-.spin-button {
-  padding: 1rem 2rem;              
-  border-radius: 0.75rem;           /* slightly more rounded for modern look */
-  font-weight: 700;                 
-  font-size: 1.125rem;              
-  text-transform: uppercase;        
-  letter-spacing: 0.05em;           
-  color: white;                     
-  background: linear-gradient(145deg, #4ade80, #16a34a); /* fresh green gradient */
-  box-shadow: 0 8px 20px rgba(34, 197, 94, 0.4);        /* modern shadow pop */
-  transition: all 0.3s ease-in-out; 
+/* Container around the button */
+.squid-game-container {
+  padding: 10px;
+  background-color: #111;           /* dark background for contrast */
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Squid Game O-style button in green */
+.squid-game-button {
+  width: 120px;
+  height: 120px;
+  border: 12px solid #a7f3d0;       /* light green border for O effect */
+  border-radius: 50%;
+  background-color: #16a34a;         /* green base */
+  color: white;
+  font-size: 6rem;                  /* large font size */
+  font-weight: 400;
   cursor: pointer;
-  transform: translateZ(0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease-in-out, background-color 0.2s, box-shadow 0.2s;
 }
 
-.spin-button:hover {
-  background: linear-gradient(145deg, #16a34a, #22c55e); /* subtle flip */
-  box-shadow: 0 12px 24px rgba(34, 197, 94, 0.5);       /* bigger hover shadow */
-  transform: translateY(-2px);                           /* slight lift */
+/* Hover effect */
+.squid-game-button:hover {
+  background-color: #22c55e;
+  transform: scale(1.1);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
 }
 
-.spin-button:active {
-  transform: scale(0.97);
-  box-shadow: inset 0 3px 6px rgba(0,0,0,0.1); 
+/* Press effect */
+.squid-game-button:active {
+  transform: scale(0.95);
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
 }
 
-.spin-button.disabled {
-  background-color: #6b7280;        
+/* Disabled state */
+.squid-game-button:disabled {
+  background-color: #6b7280;
+  border-color: #9ca3af;
   cursor: not-allowed;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); 
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+  color: #d1d5db;
 }
 
