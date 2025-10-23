@@ -883,20 +883,14 @@ export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPagePr
             </div>
 
             <div className="relative z-10 flex items-center justify-center p-8 h-[calc(100vh-120px)] overflow-hidden">
-            <div
-    className="
-        grid roulette-container  /* 👈 Gunakan kelas custom di sini */
-        p-4 w-full max-w-[1600px]
-        justify-items-center
-        items-start
-    "
-    style={{
-        // HAPUS SEMUA LOGIKA GRID YANG KONFLIK
-    }}
->
-
+            <div className="
+                    grid roulette-container
+                    p-4 w-full max-w-[1px]
+                    justify-items-center
+                    items-start"
+            >
                 {roulettes.map((roulette: any, index: number) => (
-                  <div key={roulette.id} className="flex flex-col items-center">
+                  <div key={roulette.id} className="flex flex-col items-center gap-4 mb-6 roulette-item">
                     <div className="bg-black/10 backdrop-blur-sm rounded-[3rem] p-3">
                       <div className="bg-gradient-to-b from-blue-600 via-blue-500 to-blue-600 rounded-2xl p-6 shadow-2xl border-4 border-blue-700">
                         <div className="bg-slate-900 rounded-xl p-4 shadow-inner">
@@ -904,7 +898,7 @@ export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPagePr
                             <User className="w-4 h-4 text-blue-400" />
                             <h3 className="text-blue-400 text-center text-sm">#{index + 1}</h3>
                           </div>
-                          <div className="relative roulette-item-size w-64 h-24 bg-white rounded-xl overflow-hidden shadow-xl border-4 border-slate-800">
+                          <div className="relative roulette-item-size w-40 h-24 gap-6 bg-white rounded-xl overflow-hidden shadow-xl border-4 border-slate-800">
                             <div className="absolute inset-0 flex flex-col">
                               <div
                                 className="absolute w-full"
@@ -919,7 +913,7 @@ export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPagePr
                                         key={`${p.id}-${idx}`}
                                         className="h-24 flex items-center justify-center px-4 border-b border-slate-200 bg-white/30 backdrop-blur-sm"
                                       >
-                                        <span className="text-xl font-bold truncate max-w-full text-center text-black">
+                                        <span className="text-lg font-bold text-center text-black force-wrap ">
                                           {p.name}
                                         </span>
                                       </div>

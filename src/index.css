@@ -3887,25 +3887,29 @@ html {
 /* 1. LAYOUT: RESPONSIVE GRID COLUMNS (roulette-container)  */
 /* ========================================================= */
 
-/* MOBILE DEFAULT: 1 Column */
+/* DEFAULT (<= 1023.98px): 2 Columns */
+/* Kita gabungkan logika Mobile dan Tablet di sini. 
+   Mobile (< 640px) akan tetap 1 kolom, dan Tablet (>= 640px) 2 kolom.
+*/
 .roulette-container {
     display: grid;
     gap: 2rem; /* Tailwind gap-8 */
+    
+    /* Aturan Dasar: 1 Kolom (Untuk Mobile < 640px) */
     grid-template-columns: repeat(1, minmax(0, 1fr));
-    /* grid-template-rows: repeat(1, 1fr); */ /* Opsional/Logika dinamis */
 }
 
-/* TABLET (min-width: 640px): 2 Columns */
-@media (min-width: 640px) and (max-width: 1023.98px) {
+/* Tablet (min-width: 640px): 2 Columns */
+/* Ini mencakup semua layar dari 640px hingga 1023.98px */
+@media (min-width: 640px) {
     .roulette-container {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
-/* DESKTOP (min-width: 1024px): 5 Columns */
+/* DESKTOP (> 1024px): 5 Columns */
 @media (min-width: 1024px) {
     .roulette-container {
-        /* Mengganti 'min-width: 640px' */
         grid-template-columns: repeat(5, minmax(0, 1fr));
     }
 }
@@ -3914,51 +3918,45 @@ html {
 /* 2. STYLE & SIZE: RESPONSIVE ROULETTE ITEMS                 */
 /* ========================================================= */
 
-/* A. MOBILE DEFAULT (< 640px) */
+/* DEFAULT (<= 1023.98px) */
+
 /* Wrapper Padding */
 .roulette-wrapper {
-    padding: 0.75rem; /* Lebih proporsional dari p-3/p-2 */
+    padding: 0.75rem; 
     border-radius: 3rem; 
 }
 
-/* Inner Dimensions & Text */
+/* Inner Dimensions & Text (Menggunakan Aturan Tablet/640px sebagai dasar) */
 .roulette-dimensions {
-    width: 256px; /* w-64 */
-    height: 96px; /* h-24 */
+    width: 224px;
+    height: 80px; 
 }
 .roulette-dimensions > div > div > div, 
 .roulette-dimensions + div {
-    height: 96px;
+    height: 80px;
 }
 .roulette-dimensions > div > div > div span {
-    font-size: 1.25rem; /* text-xl */
+    font-size: 1.125rem; /* text-lg */
 }
 
-
-/* B. TABLET (min-width: 640px) - Adjust Size for 2 Columns */
-@media (min-width: 640px) and (max-width: 1023.98px) {
-    /* Wrapper Padding */
-    .roulette-wrapper {
-        padding: 0.5rem; /* p-2 */
-        border-radius: 2rem;
-    }
-
-    /* Inner Dimensions & Text */
+/* MOBILE KECIL (< 640px) - Menggunakan Aturan 1 Kolom */
+@media (max-width: 639.98px) {
     .roulette-dimensions {
-        width: 224px; /* Sedikit lebih kecil dari mobile */
-        height: 80px; 
+        /* Kembalikan ke ukuran terbesar untuk 1 kolom */
+        width: 256px; 
+        height: 96px; 
     }
     .roulette-dimensions > div > div > div, 
     .roulette-dimensions + div {
-        height: 80px;
+        height: 96px;
     }
     .roulette-dimensions > div > div > div span {
-        font-size: 1.125rem; /* text-lg */
+        font-size: 1.25rem; /* text-xl */
     }
 }
 
 
-/* C. DESKTOP (min-width: 1024px) - Adjust Size for 5 Columns */
+/* DESKTOP (> 1024px) */
 @media (min-width: 1024px) {
     /* Wrapper Padding */
     .roulette-wrapper {
@@ -3968,7 +3966,7 @@ html {
 
     /* Inner Dimensions & Text */
     .roulette-dimensions {
-        width: 160px; /* Diubah agar lebih kecil dan proporsional untuk 5 kolom */
+        width: 160px; 
         height: 50px;
     }
     .roulette-dimensions > div > div > div, 
@@ -3978,4 +3976,9 @@ html {
     .roulette-dimensions > div > div > div span {
         font-size: 0.875rem; /* text-sm */
     }
+}
+
+.force-wrap {
+  overflow-wrap: break-word; /* For modern browsers */
+  word-break: break-word;    /* For older browsers */
 }
