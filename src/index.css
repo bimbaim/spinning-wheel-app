@@ -4028,42 +4028,34 @@ html {
 }
 
 .spin-button {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;                     /* perfect circle */
-  background: radial-gradient(circle at 30% 30%, #6ee7b7, #10b981); /* 3D glassy green */
-  border: none;
-  box-shadow: 
-    0 5px 10px rgba(16, 185, 129, 0.5),  /* outer shadow for depth */
-    inset 0 -3px 8px rgba(255,255,255,0.3); /* inner light for 3D effect */
+  padding: 1rem 2rem;              
+  border-radius: 0.75rem;           /* slightly more rounded for modern look */
+  font-weight: 700;                 
+  font-size: 1.125rem;              
+  text-transform: uppercase;        
+  letter-spacing: 0.05em;           
+  color: white;                     
+  background: linear-gradient(145deg, #4ade80, #16a34a); /* fresh green gradient */
+  box-shadow: 0 8px 20px rgba(34, 197, 94, 0.4);        /* modern shadow pop */
+  transition: all 0.3s ease-in-out; 
   cursor: pointer;
-  font-size: 1.25rem;
-  font-weight: bold;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease-in-out;
   transform: translateZ(0);
 }
 
 .spin-button:hover {
-  background: radial-gradient(circle at 30% 30%, #34d399, #059669);
-  box-shadow: 
-    0 8px 15px rgba(16, 185, 129, 0.6), 
-    inset 0 -3px 10px rgba(255,255,255,0.35);
-  transform: translateY(-2px);
+  background: linear-gradient(145deg, #16a34a, #22c55e); /* subtle flip */
+  box-shadow: 0 12px 24px rgba(34, 197, 94, 0.5);       /* bigger hover shadow */
+  transform: translateY(-2px);                           /* slight lift */
 }
 
 .spin-button:active {
-  transform: scale(0.95);
-  box-shadow: inset 0 5px 10px rgba(0,0,0,0.2);
+  transform: scale(0.97);
+  box-shadow: inset 0 3px 6px rgba(0,0,0,0.1); 
 }
 
 .spin-button.disabled {
-  background-color: #6b7280;
+  background-color: #6b7280;        
   cursor: not-allowed;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); 
 }
-
 
