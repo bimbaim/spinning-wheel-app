@@ -638,28 +638,6 @@ export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPagePr
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, [currentPart, isSpinning, participants, prizes, preSelectedPrizeId, spinCount, roulettes]);
 
-    useEffect(() => {
-      // Detect if device is touch-capable
-      const isTouchDevice = "ontouchstart" in window || navigator.maxTouchPoints > 0;
-
-      // Only enable for touch devices + when in part 2
-      if (!isTouchDevice || currentPart !== 2) return;
-
-      const handleTap = () => {
-        if (!isSpinning && roulettes.length > 0) {
-          handleMultiSpin();
-        }
-      };
-
-      window.addEventListener("touchstart", handleTap);
-
-      return () => {
-        window.removeEventListener("touchstart", handleTap);
-      };
-    }, [currentPart, isSpinning, roulettes, handleMultiSpin]);
-
-
-
   // const participantTotalRepeated = participants.length > 0 ? participants.length * 3 : 1;
 
   const getTransform = (slotPos: number, snapshotLength: number) => {
@@ -891,29 +869,25 @@ export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPagePr
               <div className="w-40"></div>
             </div>
 
-            <div
-  className="relative z-10 flex items-center justify-center p-8 h-[calc(100vh-120px)] overflow-hidden select-none"
-  onClick={!isSpinning ? handleMultiSpin : undefined}
-  onTouchStart={!isSpinning ? handleMultiSpin : undefined}
->
-  <div
-    className="
+            <div className="relative z-10 flex items-center justify-center p-8 h-[calc(100vh-120px)] overflow-hidden">
+              <div
+                className="
       grid gap-8 p-4 w-full max-w-[1600px]
       justify-items-center
       items-start
     "
-    style={{
-      gridTemplateColumns:
-        roulettes.length <= 3
-          ? `repeat(${roulettes.length}, minmax(0, 1fr))`
-          : roulettes.length <= 5
-          ? "repeat(5, minmax(0, 1fr))"
-          : roulettes.length <= 6
-          ? "repeat(3, minmax(0, 1fr))"
-          : "repeat(5, minmax(0, 1fr))",
-      gridTemplateRows: roulettes.length > 5 ? "repeat(2, 1fr)" : "repeat(1, 1fr)",
-    }}
-  >
+                style={{
+                  gridTemplateColumns:
+                    roulettes.length <= 3
+                      ? `repeat(${roulettes.length}, minmax(0, 1fr))`
+                      : roulettes.length <= 5
+                        ? "repeat(5, minmax(0, 1fr))"
+                        : roulettes.length <= 6
+                          ? "repeat(3, minmax(0, 1fr))"
+                          : "repeat(5, minmax(0, 1fr))",
+                  gridTemplateRows: roulettes.length > 5 ? "repeat(2, 1fr)" : "repeat(1, 1fr)",
+                }}
+              >
 
                 {roulettes.map((roulette: any, index: number) => (
                   <div key={roulette.id} className="flex flex-col items-center">
