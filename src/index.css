@@ -3863,3 +3863,119 @@ html {
     transform: translate3d(var(--tw-exit-translate-x, 0), var(--tw-exit-translate-y, 0), 0) scale3d(var(--tw-exit-scale, 1), var(--tw-exit-scale, 1), var(--tw-exit-scale, 1)) rotate(var(--tw-exit-rotate, 0));
   }
 }
+
+
+/* Custom CSS File */
+
+/* Ensure the element is visible by default (mobile/tablet) */
+.mobile-tablet-only {
+    display: flex; /* Or block, depending on the desired mobile layout */
+}
+
+/* Hide the element when the screen is desktop-sized (1024px and up) */
+@media (min-width: 1024px) {
+    .mobile-tablet-only {
+        display: none !important; /* Use !important to override any conflicting inline or utility styles */
+    }
+}
+
+/* Pastikan file ini dimuat setelah CSS Tailwind */
+
+/* Dalam file CSS global Anda (misalnya: styles.css) */
+
+/* ========================================================= */
+/* 1. LAYOUT: RESPONSIVE GRID COLUMNS (roulette-container)  */
+/* ========================================================= */
+
+/* MOBILE DEFAULT: 1 Column */
+.roulette-container {
+    display: grid;
+    gap: 2rem; /* Tailwind gap-8 */
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    /* grid-template-rows: repeat(1, 1fr); */ /* Opsional/Logika dinamis */
+}
+
+/* TABLET (min-width: 640px): 2 Columns */
+@media (min-width: 640px) and (max-width: 1023.98px) {
+    .roulette-container {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* DESKTOP (min-width: 1024px): 5 Columns */
+@media (min-width: 1024px) {
+    .roulette-container {
+        /* Mengganti 'min-width: 640px' */
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+}
+
+/* ========================================================= */
+/* 2. STYLE & SIZE: RESPONSIVE ROULETTE ITEMS                 */
+/* ========================================================= */
+
+/* A. MOBILE DEFAULT (< 640px) */
+/* Wrapper Padding */
+.roulette-wrapper {
+    padding: 0.75rem; /* Lebih proporsional dari p-3/p-2 */
+    border-radius: 3rem; 
+}
+
+/* Inner Dimensions & Text */
+.roulette-dimensions {
+    width: 256px; /* w-64 */
+    height: 96px; /* h-24 */
+}
+.roulette-dimensions > div > div > div, 
+.roulette-dimensions + div {
+    height: 96px;
+}
+.roulette-dimensions > div > div > div span {
+    font-size: 1.25rem; /* text-xl */
+}
+
+
+/* B. TABLET (min-width: 640px) - Adjust Size for 2 Columns */
+@media (min-width: 640px) and (max-width: 1023.98px) {
+    /* Wrapper Padding */
+    .roulette-wrapper {
+        padding: 0.5rem; /* p-2 */
+        border-radius: 2rem;
+    }
+
+    /* Inner Dimensions & Text */
+    .roulette-dimensions {
+        width: 224px; /* Sedikit lebih kecil dari mobile */
+        height: 80px; 
+    }
+    .roulette-dimensions > div > div > div, 
+    .roulette-dimensions + div {
+        height: 80px;
+    }
+    .roulette-dimensions > div > div > div span {
+        font-size: 1.125rem; /* text-lg */
+    }
+}
+
+
+/* C. DESKTOP (min-width: 1024px) - Adjust Size for 5 Columns */
+@media (min-width: 1024px) {
+    /* Wrapper Padding */
+    .roulette-wrapper {
+        padding: 0.25rem; /* p-1 */
+        border-radius: 1.5rem;
+    }
+
+    /* Inner Dimensions & Text */
+    .roulette-dimensions {
+        width: 160px; /* Diubah agar lebih kecil dan proporsional untuk 5 kolom */
+        height: 50px;
+    }
+    .roulette-dimensions > div > div > div, 
+    .roulette-dimensions + div {
+        height: 50px;
+    }
+    .roulette-dimensions > div > div > div span {
+        font-size: 0.875rem; /* text-sm */
+    }
+}
