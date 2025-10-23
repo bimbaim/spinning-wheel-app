@@ -59,18 +59,18 @@ interface RawLog {
 
 const groupLogsIntoEvents = (logs: RawLog[]): SpinEvent[] => {
   if (!logs || logs.length === 0) return [];
-  
+
   // Sort by timestamp descending (newest first)
-  const sortedLogs = [...logs].sort((a, b) => 
+  const sortedLogs = [...logs].sort((a, b) =>
     new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
-  
+
   const eventsMap: Map<string, SpinEvent> = new Map();
   let eventCounter = 0;
   let lastTimestamp = 0;
 
   // Grouping by a simple time difference (e.g., logs within 5 seconds belong to the same event)
-  const TIME_THRESHOLD_MS = 5000; 
+  const TIME_THRESHOLD_MS = 5000;
 
   for (const log of sortedLogs) {
     const logTime = new Date(log.timestamp).getTime();
@@ -166,7 +166,7 @@ export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPagePr
   };
 
   useEffect(() => {
-    spinSound.current = new Audio("/sounds/spin.mp3");
+    spinSound.current = new Audio("/sounds/gun.mp3");
     winSound.current = new Audio("/sounds/win.mp3");
     spinSound.current.volume = 0.4;
     winSound.current.volume = 0.7;
@@ -200,10 +200,10 @@ export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPagePr
         setPrizes(prizesData.filter((p: Prize) => p.quantity > 0));
         setInitialPrizes(prizesData.filter((p: Prize) => p.quantity > 0));
       } else {
-       const [participantsRes, prizesRes, logsRes] = await Promise.all([
+        const [participantsRes, prizesRes, logsRes] = await Promise.all([
           fetch(`${apiUrl}/participants`, { headers: { Authorization: `Bearer ${accessToken}` } }),
           fetch(`${apiUrl}/prizes`, { headers: { Authorization: `Bearer ${accessToken}` } }),
-          fetch(`${apiUrl}/slot-spin/logs`, { headers: { Authorization: `Bearer ${accessToken}` } }), 
+          fetch(`${apiUrl}/slot-spin/logs`, { headers: { Authorization: `Bearer ${accessToken}` } }),
         ]);
 
         const participantsData = await participantsRes.json();
@@ -395,6 +395,51 @@ export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPagePr
     setRoulettes([]);
   };
 
+  const [bulletHoles, setBulletHoles] = useState<
+    { id: number; x: number; y: number; rotation: number; size: number }[]
+  >([]);
+
+
+
+  function triggerFlashingEffect() {
+    const overlay = document.getElementById("flash-overlay");
+    if (!overlay) return;
+
+    const maxFlashes = 12; // number of flashes
+    let flashes = 0;
+
+    const flashInterval = setInterval(() => {
+      // alternate between visible and transparent
+      overlay.style.opacity = flashes % 2 === 0 ? "1" : "0";
+      flashes++;
+
+      if (flashes >= maxFlashes * 2) {
+        clearInterval(flashInterval);
+        overlay.style.opacity = "0";
+      }
+    }, 100); // flash speed (ms)
+  }
+
+  function addBulletHolesBurst(count = 3) {
+    const newHoles = Array.from({ length: count }).map(() => ({
+      id: Date.now() + Math.random(),
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+      rotation: Math.random() * 360,
+      size: 40 + Math.random() * 80, // 40–60px
+    }));
+
+    setBulletHoles((prev) => [...prev, ...newHoles]);
+
+    // Optional fade-out after 2–3s
+    setTimeout(() => {
+      setBulletHoles((prev) =>
+        prev.filter((hole) => !newHoles.some((h) => h.id === hole.id))
+      );
+    }, 2500);
+  }
+
+
   const handleMultiSpin = async () => {
     if (participants.length === 0 || prizes.length === 0 || !preSelectedPrizeId) return;
 
@@ -403,6 +448,15 @@ export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPagePr
 
     setIsSpinning(true);
     spinSound.current?.play().catch(() => { });
+    setTimeout(() => {
+      triggerFlashingEffect();
+    }, 50);
+    // burst every few milliseconds while spinning
+    const holeInterval = setInterval(() => {
+      addBulletHolesBurst(10); // 2–3 new holes each tick
+    }, 150);
+
+    setTimeout(() => clearInterval(holeInterval), 1000); // stop after 1s or when spin ends
 
     const totalParticipants = participants.length;
     const duration = 4000;
@@ -487,7 +541,7 @@ export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPagePr
     winSound.current?.play().catch(() => { });
 
     // 🎉 Confetti burst per pemenang
-   results.forEach((result, index) => {
+    results.forEach((result, index) => {
       if (result) {
         // Delay tiap spin biar berurutan
         setTimeout(() => {
@@ -600,258 +654,297 @@ export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPagePr
 
 
   return (
-    <div
-      className="min-h-screen relative overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900"
-      style={{
-        backgroundImage: `url(${bgImage})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      }}
-    >
-      {/* Overlay hitam transparan biar teks tetap terbaca */}
-      <div className="absolute inset-0 bg-black/40"></div>
 
-      {/* Part 1 - Settings */}
-      {currentPart === 1 && (
-        <div className="absolute inset-0 z-20 animate-in fade-in slide-in-from-right duration-700">
-          <div className="relative z-10 p-6 flex items-center justify-between">
-            <Button
-              onClick={onBack}
-              variant="ghost"
-              className="text-white hover:text-white hover:bg-white/20 border border-white/30"
-            >
-              <ArrowLeft className="w-5 h-5 mr-2" />
-              Back to Dashboard
-            </Button>
+    <>
 
-            <div className="text-center">
-              <h1 className="text-white text-3xl drop-shadow-lg">Slot Spin Settings</h1>
-              <p className="text-white/80 text-sm mt-1">Configure your spin event</p>
-            </div>
+      <div
+        className="min-h-screen relative overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900"
+        style={{
+          backgroundImage: `url(${bgImage})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}
+      >
+        {/* Overlay hitam transparan biar teks tetap terbaca */}
+        <div className="absolute inset-0 bg-black/40"></div>
 
-            {/* Placeholder untuk menjaga layout agar tetap seimbang */}
-            <div className="w-[150px]" />
-          </div>
-
-          <div className="relative z-10 flex gap-6 p-8 h-[calc(100vh-120px)]">
-            <div className="flex-[0.4] flex flex-col items-center justify-start">
-              <div className="mb-6 bg-black/20 backdrop-blur-sm rounded-2xl p-6 border border-white/20 w-full max-w-4xl">
-                <p className="text-white text-center mb-4 text-lg">Select Prize</p>
-                <div className="flex items-center justify-center gap-3">
-                  <Select value={preSelectedPrizeId} onValueChange={setPreSelectedPrizeId} disabled={isSpinning}>
-                    <SelectTrigger className="w-96 bg-slate-800 text-white border-slate-600 px-4 py-3 rounded-lg">
-                      <SelectValue placeholder="Choose a prize..." />
-                    </SelectTrigger>
-                    <SelectContent className="bg-slate-800 text-white border-slate-600">
-                      {prizes.map((prize) => (
-                        <SelectItem key={prize.id} value={prize.id} className="hover:bg-slate-700">
-                          {prize.name} (Qty: {prize.quantity})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                {preSelectedPrizeId && (
-                  <p className="text-center text-yellow-300 text-sm mt-3">
-                    💡 Max spin count: {getMaxAllowedSpins()}x
-                  </p>
-                )}
-              </div>
-
-              <div className="mb-8 bg-black/20 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-                <p className="text-white text-center mb-4 text-lg">Select Spin Count</p>
-                <ToggleGroup
-                  type="single"
-                  value={spinCount}
-                  onValueChange={(value: "1" | "5" | "10" | undefined) => {
-                    if (value) setSpinCount(value);
-                  }}
-                  className="gap-2"
-                  disabled={isSpinning}
-                >
-                  {["1", "5", "10"].map((option) => (
-                    <ToggleGroupItem
-                      key={option}
-                      value={option as "1" | "5" | "10"}
-                      disabled={!getAvailableSpinOptions().includes(option as "1" | "5" | "10")}
-                      className="px-8 py-4 text-lg rounded-lg font-semibold transition-all bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white data-[state=on]:from-purple-500 data-[state=on]:to-blue-500 data-[state=on]:ring-2 data-[state=on]:ring-white disabled:opacity-30 disabled:cursor-not-allowed"
-                    >
-                      {option}x Spin
-                    </ToggleGroupItem>
-                  ))}
-                </ToggleGroup>
-              </div>
-
+        {/* Part 1 - Settings */}
+        {currentPart === 1 && (
+          <div className="absolute inset-0 z-20 animate-in fade-in slide-in-from-right duration-700">
+            <div className="relative z-10 p-6 flex items-center justify-between">
               <Button
-                onClick={goToPart2}
-                disabled={!preSelectedPrizeId || isSpinning}
-                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-2xl shadow-green-500/50 px-16 py-8 text-2xl transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                onClick={onBack}
+                variant="ghost"
+                className="text-white hover:text-white hover:bg-white/20 border border-white/30"
               >
-                Let's Spin! <ArrowRight className="w-8 h-8 ml-3" />
+                <ArrowLeft className="w-5 h-5 mr-2" />
+                Back to Dashboard
               </Button>
+
+              <div className="text-center">
+                <h1 className="text-white text-3xl drop-shadow-lg">Slot Spin Settings</h1>
+                <p className="text-white/80 text-sm mt-1">Configure your spin event</p>
+              </div>
+
+              {/* Placeholder untuk menjaga layout agar tetap seimbang */}
+              <div className="w-[150px]" />
             </div>
 
-            <div className="flex-[0.6] flex flex-col max-h-[calc(100vh-180px)] bg-black/20 backdrop-blur-sm rounded-2xl p-6 border border-white/20 overflow-hidden w-full">
-              <h2 className="text-white text-xl mb-4 flex items-center gap-2 w-full">
-                <Trophy className="w-5 h-5" />
-                <span className="truncate">Spin History</span>
-              </h2>
-
-              {spinEvents.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-4 overflow-x-auto pb-2 w-full">
-                  {spinEvents.map((event, index) => (
-                    <button
-                      key={event.id}
-                      onClick={() => setActiveEventTab(index)}
-                      className={`px-4 py-2 rounded-lg whitespace-nowrap transition-all ${activeEventTab === index
-                        ? "bg-purple-500 text-white"
-                        : "bg-white/10 text-white/70 hover:bg-white/20"
-                        }`}
-                    >
-                      Event {spinEvents.length - index} ({event.count}x)
-                    </button>
-                  ))}
+            <div className="relative z-10 flex gap-6 p-8 h-[calc(100vh-120px)]">
+              <div className="flex-[0.4] flex flex-col items-center justify-start">
+                <div className="mb-6 bg-black/20 backdrop-blur-sm rounded-2xl p-6 border border-white/20 w-full max-w-4xl">
+                  <p className="text-white text-center mb-4 text-lg">Select Prize</p>
+                  <div className="flex items-center justify-center gap-3">
+                    <Select value={preSelectedPrizeId} onValueChange={setPreSelectedPrizeId} disabled={isSpinning}>
+                      <SelectTrigger className="w-96 bg-slate-800 text-white border-slate-600 px-4 py-3 rounded-lg">
+                        <SelectValue placeholder="Choose a prize..." />
+                      </SelectTrigger>
+                      <SelectContent className="bg-slate-800 text-white border-slate-600">
+                        {prizes.map((prize) => (
+                          <SelectItem key={prize.id} value={prize.id} className="hover:bg-slate-700">
+                            {prize.name} (Qty: {prize.quantity})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {preSelectedPrizeId && (
+                    <p className="text-center text-yellow-300 text-sm mt-3">
+                      💡 Max spin count: {getMaxAllowedSpins()}x
+                    </p>
+                  )}
                 </div>
-              )}
 
-              <div className="flex-1 overflow-y-auto space-y-3 pr-2 w-full">
-                {spinEvents.length === 0 ? (
-                  <p className="text-white/50 text-center py-8">No spins yet</p>
-                ) : (
-                  spinEvents[activeEventTab]?.results.map((result) => (
-                    <div
-                      key={result.id}
-                      className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 hover:bg-white/15 transition-colors w-full"
-                    >
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <User className="w-4 h-4 text-blue-400" />
-                            <p className="text-white font-medium">{result.participant.name}</p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Trophy className="w-4 h-4 text-yellow-400" />
-                            <p className="text-yellow-300 text-sm">{result.prize.name}</p>
+                <div className="mb-8 bg-black/20 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+                  <p className="text-white text-center mb-4 text-lg">Select Spin Count</p>
+                  <ToggleGroup
+                    type="single"
+                    value={spinCount}
+                    onValueChange={(value: "1" | "5" | "10" | undefined) => {
+                      if (value) setSpinCount(value);
+                    }}
+                    className="gap-2"
+                    disabled={isSpinning}
+                  >
+                    {["1", "5", "10"].map((option) => (
+                      <ToggleGroupItem
+                        key={option}
+                        value={option as "1" | "5" | "10"}
+                        disabled={!getAvailableSpinOptions().includes(option as "1" | "5" | "10")}
+                        className="px-8 py-4 text-lg rounded-lg font-semibold transition-all bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white data-[state=on]:from-purple-500 data-[state=on]:to-blue-500 data-[state=on]:ring-2 data-[state=on]:ring-white disabled:opacity-30 disabled:cursor-not-allowed"
+                      >
+                        {option}x Spin
+                      </ToggleGroupItem>
+                    ))}
+                  </ToggleGroup>
+                </div>
+
+                <Button
+                  onClick={goToPart2}
+                  disabled={!preSelectedPrizeId || isSpinning}
+                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-2xl shadow-green-500/50 px-16 py-8 text-2xl transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                >
+                  Let's Spin! <ArrowRight className="w-8 h-8 ml-3" />
+                </Button>
+              </div>
+
+              <div className="flex-[0.6] flex flex-col max-h-[calc(100vh-180px)] bg-black/20 backdrop-blur-sm rounded-2xl p-6 border border-white/20 overflow-hidden w-full">
+                <h2 className="text-white text-xl mb-4 flex items-center gap-2 w-full">
+                  <Trophy className="w-5 h-5" />
+                  <span className="truncate">Spin History</span>
+                </h2>
+
+                {spinEvents.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-4 overflow-x-auto pb-2 w-full">
+                    {spinEvents.map((event, index) => (
+                      <button
+                        key={event.id}
+                        onClick={() => setActiveEventTab(index)}
+                        className={`px-4 py-2 rounded-lg whitespace-nowrap transition-all ${activeEventTab === index
+                          ? "bg-purple-500 text-white"
+                          : "bg-white/10 text-white/70 hover:bg-white/20"
+                          }`}
+                      >
+                        Event {spinEvents.length - index} ({event.count}x)
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                <div className="flex-1 overflow-y-auto space-y-3 pr-2 w-full">
+                  {spinEvents.length === 0 ? (
+                    <p className="text-white/50 text-center py-8">No spins yet</p>
+                  ) : (
+                    spinEvents[activeEventTab]?.results.map((result) => (
+                      <div
+                        key={result.id}
+                        className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 hover:bg-white/15 transition-colors w-full"
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <User className="w-4 h-4 text-blue-400" />
+                              <p className="text-white font-medium">{result.participant.name}</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Trophy className="w-4 h-4 text-yellow-400" />
+                              <p className="text-yellow-300 text-sm">{result.prize.name}</p>
+                            </div>
                           </div>
                         </div>
+                        <p className="text-white/40 text-xs">
+                          {new Date(result.timestamp).toLocaleString()}
+                        </p>
                       </div>
-                      <p className="text-white/40 text-xs">
-                        {new Date(result.timestamp).toLocaleString()}
-                      </p>
-                    </div>
-                  ))
-                )}
+                    ))
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Part 2 - Spin Roulettes */}
-      {currentPart === 2 && (
-        <div className="absolute inset-0 z-20 animate-in fade-in slide-in-from-left duration-700">
-          <div className="relative z-10 p-6 flex items-center justify-between">
-            <Button
-              onClick={goToPart1}
-              variant="ghost"
-              className="text-white hover:text-white hover:bg-white/20 border border-white/30"
-              disabled={isSpinning}
-            >
-              <ChevronLeft className="w-5 h-5 mr-2" />
-              Back to Settings
-            </Button>
-            <div className="text-center">
-              <h1 className="text-white text-3xl drop-shadow-lg">Spin Time!</h1>
-              <p className="text-white/80 text-sm mt-1">
-                Press <kbd className="px-2 py-1 bg-white/20 rounded">Enter</kbd> to start
-              </p>
-              {preSelectedPrizeObj && (
-                <div className="mt-2 inline-flex items-center gap-2 bg-yellow-500/20 backdrop-blur-sm px-4 py-2 rounded-lg border border-yellow-500/50">
-                  <Trophy className="w-4 h-4 text-yellow-400" />
-                  <span className="text-yellow-300 font-medium">Prize: {preSelectedPrizeObj.name}</span>
-                  <span className="text-yellow-400 text-sm">(Qty: {preSelectedPrizeObj.quantity})</span>
-                </div>
-              )}
+        {/* Part 2 - Spin Roulettes */}
+        {currentPart === 2 && (
+
+          <div className="absolute inset-0 z-20 animate-in fade-in slide-in-from-left duration-700">
+
+            {/* 🔦 Flash overlay shown while spinning */}
+            {isSpinning && (
+              <div
+                id="flash-overlay"
+                className="fixed inset-0 z-[999] opacity-0 pointer-events-none transition-opacity duration-50"
+                style={{
+                  backgroundColor: "rgba(240, 255, 255, 0.5)", // warm orange-yellow glow
+                  mixBlendMode: "screen",
+                }}
+              ></div>
+            )}
+
+            {bulletHoles.map((hole) => (
+              <img
+                key={hole.id}
+                src="/effects/bullet-hole.png"
+                alt="bullet hole"
+                className="fixed z-[1000] pointer-events-none select-none"
+                style={{
+                  top: hole.y - hole.size / 2,
+                  left: hole.x - hole.size / 2,
+                  width: `${hole.size}px`,
+                  height: `${hole.size}px`,
+                  opacity: 0.95,
+                  transform: `rotate(${hole.rotation}deg)`,
+                  transition: "opacity 0.3s ease",
+                }}
+              />
+            ))}
+
+
+
+
+            <div className="relative z-10 p-6 flex items-center justify-between">
+              <Button
+                onClick={goToPart1}
+                variant="ghost"
+                className="text-white hover:text-white hover:bg-white/20 border border-white/30"
+                disabled={isSpinning}
+              >
+                <ChevronLeft className="w-5 h-5 mr-2" />
+                Back to Settings
+              </Button>
+              <div className="text-center">
+                <h1 className="text-white text-3xl drop-shadow-lg">Spin Time!</h1>
+                <p className="text-white/80 text-sm mt-1">
+                  Press <kbd className="px-2 py-1 bg-white/20 rounded">Enter</kbd> to start
+                </p>
+                {preSelectedPrizeObj && (
+                  <div className="mt-2 inline-flex items-center gap-2 bg-yellow-500/20 backdrop-blur-sm px-4 py-2 rounded-lg border border-yellow-500/50">
+                    <Trophy className="w-4 h-4 text-yellow-400" />
+                    <span className="text-yellow-300 font-medium">Prize: {preSelectedPrizeObj.name}</span>
+                    <span className="text-yellow-400 text-sm">(Qty: {preSelectedPrizeObj.quantity})</span>
+                  </div>
+                )}
+              </div>
+              <div className="w-40"></div>
             </div>
-            <div className="w-40"></div>
-          </div>
 
-          <div className="relative z-10 flex items-center justify-center p-8 h-[calc(100vh-120px)] overflow-hidden">
-            <div
-              className="
+            <div className="relative z-10 flex items-center justify-center p-8 h-[calc(100vh-120px)] overflow-hidden">
+              <div
+                className="
       grid gap-8 p-4 w-full max-w-[1600px]
       justify-items-center
       items-start
     "
-              style={{
-                gridTemplateColumns:
-                  roulettes.length <= 3
-                    ? `repeat(${roulettes.length}, minmax(0, 1fr))`
-                    : roulettes.length <= 5
-                      ? "repeat(5, minmax(0, 1fr))"
-                      : roulettes.length <= 6
-                        ? "repeat(3, minmax(0, 1fr))"
-                        : "repeat(5, minmax(0, 1fr))",
-                gridTemplateRows: roulettes.length > 5 ? "repeat(2, 1fr)" : "repeat(1, 1fr)",
-              }}
-            >
+                style={{
+                  gridTemplateColumns:
+                    roulettes.length <= 3
+                      ? `repeat(${roulettes.length}, minmax(0, 1fr))`
+                      : roulettes.length <= 5
+                        ? "repeat(5, minmax(0, 1fr))"
+                        : roulettes.length <= 6
+                          ? "repeat(3, minmax(0, 1fr))"
+                          : "repeat(5, minmax(0, 1fr))",
+                  gridTemplateRows: roulettes.length > 5 ? "repeat(2, 1fr)" : "repeat(1, 1fr)",
+                }}
+              >
 
-              {roulettes.map((roulette: any, index: number) => (
-                <div key={roulette.id} className="flex flex-col items-center">
-                  <div className="bg-black/10 backdrop-blur-sm rounded-[3rem] p-3">
-                    <div className="bg-gradient-to-b from-blue-600 via-blue-500 to-blue-600 rounded-2xl p-6 shadow-2xl border-4 border-blue-700">
-                      <div className="bg-slate-900 rounded-xl p-4 shadow-inner">
-                        <div className="flex items-center justify-center mb-3 gap-2">
-                          <User className="w-4 h-4 text-blue-400" />
-                          <h3 className="text-blue-400 text-center text-sm">#{index + 1}</h3>
-                        </div>
-                        <div className="relative w-64 h-24 bg-white rounded-xl overflow-hidden shadow-xl border-4 border-slate-800">
-                          <div className="absolute inset-0 flex flex-col">
-                            <div
-                              className="absolute w-full"
-                              style={getTransform(roulette.participantSlotPos, roulette.snapshotParticipants.length)}
-                            >
-                              {roulette.snapshotParticipants.length > 0 ? (
-                                roulette.snapshotParticipants
-                                  .concat(roulette.snapshotParticipants)
-                                  .concat(roulette.snapshotParticipants)
-                                  .map((p: Participant, idx: number) => ( // ✅ tentukan tipe Participant
-                                    <div
-                                      key={`${p.id}-${idx}`}
-                                      className="h-24 flex items-center justify-center px-4 border-b border-slate-200 bg-white/30 backdrop-blur-sm"
-                                    >
-                                      <span className="text-xl font-bold truncate max-w-full text-center text-black">
-                                        {p.name}
-                                      </span>
-                                    </div>
-                                  ))
-                              ) : (
-                                <div className="h-24 flex items-center justify-center bg-white/30 backdrop-blur-sm">
-                                  <span className="text-xl font-bold text-slate-400">No participants</span>
-                                </div>
-                              )}
-                            </div>
-
+                {roulettes.map((roulette: any, index: number) => (
+                  <div key={roulette.id} className="flex flex-col items-center">
+                    <div className="bg-black/10 backdrop-blur-sm rounded-[3rem] p-3">
+                      <div className="bg-gradient-to-b from-blue-600 via-blue-500 to-blue-600 rounded-2xl p-6 shadow-2xl border-4 border-blue-700">
+                        <div className="bg-slate-900 rounded-xl p-4 shadow-inner">
+                          <div className="flex items-center justify-center mb-3 gap-2">
+                            <User className="w-4 h-4 text-blue-400" />
+                            <h3 className="text-blue-400 text-center text-sm">#{index + 1}</h3>
                           </div>
-                          <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-24 border-y-4 border-blue-500 pointer-events-none"></div>
+                          <div className="relative w-64 h-24 bg-white rounded-xl overflow-hidden shadow-xl border-4 border-slate-800">
+                            <div className="absolute inset-0 flex flex-col">
+                              <div
+                                className="absolute w-full"
+                                style={getTransform(roulette.participantSlotPos, roulette.snapshotParticipants.length)}
+                              >
+                                {roulette.snapshotParticipants.length > 0 ? (
+                                  roulette.snapshotParticipants
+                                    .concat(roulette.snapshotParticipants)
+                                    .concat(roulette.snapshotParticipants)
+                                    .map((p: Participant, idx: number) => ( // ✅ tentukan tipe Participant
+                                      <div
+                                        key={`${p.id}-${idx}`}
+                                        className="h-24 flex items-center justify-center px-4 border-b border-slate-200 bg-white/30 backdrop-blur-sm"
+                                      >
+                                        <span className="text-xl font-bold truncate max-w-full text-center text-black">
+                                          {p.name}
+                                        </span>
+                                      </div>
+                                    ))
+                                ) : (
+                                  <div className="h-24 flex items-center justify-center bg-white/30 backdrop-blur-sm">
+                                    <span className="text-xl font-bold text-slate-400">No participants</span>
+                                  </div>
+                                )}
+                              </div>
+
+                            </div>
+                            <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-24 border-y-4 border-blue-500 pointer-events-none"></div>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
 
-                  {roulette.showResult && roulette.selectedParticipant && (
-                    <div className="mt-4 bg-gradient-to-r from-green-500/20 to-teal-500/20 backdrop-blur-lg rounded-xl border-2 border-green-500/80 px-4 py-3 animate-in fade-in zoom-in duration-500">
-                      <p className="text-green-300 text-xs text-center mb-1">🎉 Winner</p>
-                      <p className="text-white text-sm font-bold text-center">{roulette.selectedParticipant.name}</p>
-                    </div>
-                  )}
-                </div>
-              ))}
+                    {roulette.showResult && roulette.selectedParticipant && (
+                      <div className="mt-4 bg-gradient-to-r from-green-500/20 to-teal-500/20 backdrop-blur-lg rounded-xl border-2 border-green-500/80 px-4 py-3 animate-in fade-in zoom-in duration-500">
+                        <p className="text-green-300 text-xs text-center mb-1">🎉 Winner</p>
+                        <p className="text-white text-sm font-bold text-center">{roulette.selectedParticipant.name}</p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </>
   );
 }
