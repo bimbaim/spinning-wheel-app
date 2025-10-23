@@ -806,7 +806,7 @@ export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPagePr
         )}
 
         {/* Part 2 - Spin Roulettes */}
-        {currentPart === 2 && (
+{currentPart === 2 && (
   <div className="absolute inset-0 z-20 animate-in fade-in slide-in-from-left duration-700 flex flex-col">
     {/* 🔦 Flash overlay */}
     {isSpinning && (
@@ -814,7 +814,7 @@ export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPagePr
         id="flash-overlay"
         className="fixed inset-0 z-[999] opacity-0 pointer-events-none transition-opacity duration-50"
         style={{
-          backgroundColor: "rgba(240, 255, 255, 0.5)", // warm glow
+          backgroundColor: "rgba(240, 255, 255, 0.5)",
           mixBlendMode: "screen",
         }}
       ></div>
@@ -839,7 +839,7 @@ export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPagePr
       />
     ))}
 
-    {/* 🎛 Header controls */}
+    {/* 🎛 Header */}
     <div className="relative z-10 p-4 sm:p-6 flex items-center justify-between">
       <Button
         onClick={goToPart1}
@@ -853,9 +853,12 @@ export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPagePr
 
       <div className="text-center flex-1">
         <h1 className="text-white text-2xl sm:text-3xl drop-shadow-lg">Spin Time!</h1>
-        <p className="text-white/80 text-sm mt-1 hidden sm:block">
+
+        {/* 💻 Only show "Press Enter" hint on desktop */}
+        <p className="text-white/80 text-sm mt-1 hidden lg:block">
           Press <kbd className="px-2 py-1 bg-white/20 rounded">Enter</kbd> to start
         </p>
+
         {preSelectedPrizeObj && (
           <div className="mt-2 inline-flex items-center gap-2 bg-yellow-500/20 backdrop-blur-sm px-3 py-2 rounded-lg border border-yellow-500/50">
             <Trophy className="w-4 h-4 text-yellow-400" />
@@ -864,6 +867,7 @@ export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPagePr
           </div>
         )}
       </div>
+
       <div className="w-12 sm:w-40"></div>
     </div>
 
@@ -951,25 +955,26 @@ export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPagePr
         ))}
       </div>
 
-      {/* 📱 Tap-to-Spin Button (only for mobile & tablet) */}
-      {typeof window !== "undefined" && window.innerWidth < 1024 && (
+      {/* 📱 Spin Button only for mobile & tablet */}
+      <div className="mt-8 block lg:hidden">
         <Button
           onClick={() => {
             if (!isSpinning && roulettes.length > 0) handleMultiSpin();
           }}
           disabled={isSpinning}
-          className={`mt-6 sm:mt-10 px-8 py-4 rounded-2xl font-bold text-white text-lg shadow-xl transition-all duration-300 ${
+          className={`px-10 py-4 rounded-2xl font-bold text-white text-lg shadow-xl transition-all duration-300 ${
             isSpinning
               ? "bg-gray-400 cursor-not-allowed"
               : "bg-red-600 hover:bg-red-700 active:scale-95"
           }`}
         >
-          🎯 Tap to Spin
+          🎯 Spin
         </Button>
-      )}
+      </div>
     </div>
   </div>
 )}
+
 
       </div>
     </>
