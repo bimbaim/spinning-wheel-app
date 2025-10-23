@@ -4028,31 +4028,34 @@ html {
 }
 
 .spin-button {
-  padding: 1rem 2rem;              /* px-8 py-4 */
-  border-radius: 0.5rem;           /* rounded-lg */
-  font-weight: 700;                 /* font-bold */
-  font-size: 1.125rem;              /* text-lg */
-  text-transform: uppercase;        /* uppercase */
-  letter-spacing: 0.05em;           /* tracking-wide */
-  color: white;                     /* text-white */
-  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); /* shadow-lg */
-  transition: all 0.2s ease-in-out; /* transition-all duration-200 */
-  transform: translateZ(0);         /* transform */
+  padding: 1rem 2rem;              
+  border-radius: 0.75rem;           /* slightly more rounded for modern look */
+  font-weight: 700;                 
+  font-size: 1.125rem;              
+  text-transform: uppercase;        
+  letter-spacing: 0.05em;           
+  color: white;                     
+  background: linear-gradient(145deg, #4ade80, #16a34a); /* fresh green gradient */
+  box-shadow: 0 8px 20px rgba(34, 197, 94, 0.4);        /* modern shadow pop */
+  transition: all 0.3s ease-in-out; 
   cursor: pointer;
-  background-color: #dc2626;        /* bg-red-600 */
+  transform: translateZ(0);
 }
 
 .spin-button:hover {
-  background-color: #b91c1c;        /* hover:bg-red-700 */
+  background: linear-gradient(145deg, #16a34a, #22c55e); /* subtle flip */
+  box-shadow: 0 12px 24px rgba(34, 197, 94, 0.5);       /* bigger hover shadow */
+  transform: translateY(-2px);                           /* slight lift */
 }
 
 .spin-button:active {
-  transform: scale(0.97);           /* active:scale-[0.97] */
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); /* active:shadow-inner */
+  transform: scale(0.97);
+  box-shadow: inset 0 3px 6px rgba(0,0,0,0.1); 
 }
 
 .spin-button.disabled {
-  background-color: #6b7280;        /* bg-gray-500 */
+  background-color: #6b7280;        
   cursor: not-allowed;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); /* shadow-inner */
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); 
 }
+
