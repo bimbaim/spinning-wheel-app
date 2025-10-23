@@ -3871,133 +3871,156 @@ html {
 
 /* Custom CSS File */
 
-/* Ensure the element is visible by default (mobile/tablet) */
-.mobile-tablet-only {
-    display: flex; /* Or block, depending on the desired mobile layout */
+/* Jika cuma satu roulette, tengahin container */
+.roulette-container.single {
+  display: flex;           /* pakai flex agar child bisa di-center */
+  justify-content: center; /* center horizontal */
+  align-items: flex-start; /* tetap dari atas */
 }
 
-/* Hide the element when the screen is desktop-sized (1024px and up) */
+.roulette-container.single .roulette-item .responsive-width {
+  width: 500px; /* contoh lebih lebar */
+}
+
+
+/* ========================================================= */
+/* 0. MOBILE/TABLET ONLY ELEMENTS                            */
+/* ========================================================= */
+.mobile-tablet-only {
+    display: flex; /* Default for mobile/tablet */
+}
+
 @media (min-width: 1024px) {
     .mobile-tablet-only {
-        display: none !important; /* Use !important to override any conflicting inline or utility styles */
+        display: none !important; /* Hide on desktop */
     }
 }
 
-/* Pastikan file ini dimuat setelah CSS Tailwind */
-
-/* Dalam file CSS global Anda (misalnya: styles.css) */
-
 /* ========================================================= */
-/* 1. LAYOUT: RESPONSIVE GRID COLUMNS (roulette-container)  */
+/* 1. LAYOUT & SIZE: RESPONSIVE ROULETTE ITEMS              */
 /* ========================================================= */
 
-/* DEFAULT (<= 1023.98px): 2 Columns */
-/* Kita gabungkan logika Mobile dan Tablet di sini. 
-   Mobile (< 640px) akan tetap 1 kolom, dan Tablet (>= 640px) 2 kolom.
-*/
+/* -------------------- MOBILE (< 640px) -------------------- */
 .roulette-container {
     display: grid;
-    gap: 2rem; /* Tailwind gap-8 */
-    
-    /* Aturan Dasar: 1 Kolom (Untuk Mobile < 640px) */
+    gap: 2rem;
     grid-template-columns: repeat(1, minmax(0, 1fr));
 }
 
-/* Tablet (min-width: 640px): 2 Columns */
-/* Ini mencakup semua layar dari 640px hingga 1023.98px */
-@media (min-width: 640px) {
+.roulette-wrapper {
+    padding: 0.75rem;
+    border-radius: 3rem;
+}
+
+.roulette-dimensions {
+    width: 256px;
+    height: 96px;
+}
+
+.roulette-dimensions > div > div > div,
+.roulette-dimensions + div {
+    height: 96px;
+}
+
+.roulette-dimensions > div > div > div span {
+    font-size: 1.25rem;
+}
+
+.responsive-width {
+    width: calc(var(--spacing) * 40);
+}
+
+/* -------------------- TABLET (640px - 1023.98px) -------------------- */
+@media (min-width: 640px) and (max-width: 1023.98px) {
     .roulette-container {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
+    .roulette-wrapper {
+        padding: 0.75rem;
+        border-radius: 3rem;
+    }
+
+    .roulette-dimensions {
+        width: 224px;
+        height: 80px;
+    }
+
+    .roulette-dimensions > div > div > div,
+    .roulette-dimensions + div {
+        height: 80px;
+    }
+
+    .roulette-dimensions > div > div > div span {
+        font-size: 1.125rem;
+    }
+
     .responsive-width {
-      width: calc(var(--spacing) * 55);
+        width: calc(var(--spacing) * 55);
     }
 }
 
-/* DESKTOP (> 1024px): 5 Columns */
-@media (min-width: 1024px) {
+/* -------------------- DESKTOP SMALL (1024px - 1439.98px) -------------------- */
+@media (min-width: 1024px) and (max-width: 1439.98px) {
     .roulette-container {
         grid-template-columns: repeat(5, minmax(0, 1fr));
     }
 
-   
-
-}
-
-/* ========================================================= */
-/* 2. STYLE & SIZE: RESPONSIVE ROULETTE ITEMS                 */
-/* ========================================================= */
-
-/* DEFAULT (<= 1023.98px) */
-
-/* Wrapper Padding */
-.roulette-wrapper {
-    padding: 0.75rem; 
-    border-radius: 3rem; 
-}
-
-/* Inner Dimensions & Text (Menggunakan Aturan Tablet/640px sebagai dasar) */
-.roulette-dimensions {
-    width: 224px;
-    height: 80px; 
-}
-.roulette-dimensions > div > div > div, 
-.roulette-dimensions + div {
-    height: 80px;
-}
-.roulette-dimensions > div > div > div span {
-    font-size: 1.125rem; /* text-lg */
-}
-
-/* MOBILE KECIL (< 640px) - Menggunakan Aturan 1 Kolom */
-@media (max-width: 639.98px) {
-    .roulette-dimensions {
-        /* Kembalikan ke ukuran terbesar untuk 1 kolom */
-        width: 256px; 
-        height: 96px; 
-    }
-    .roulette-dimensions > div > div > div, 
-    .roulette-dimensions + div {
-        height: 96px;
-    }
-    .roulette-dimensions > div > div > div span {
-        font-size: 1.25rem; /* text-xl */
-    }
-
-    .responsive-width {
-      width: calc(var(--spacing) * 40);
-    }
-
-    
-}
-
-
-/* DESKTOP (> 1024px) */
-@media (min-width: 1024px) {
-    /* Wrapper Padding */
     .roulette-wrapper {
-        padding: 0.25rem; /* p-1 */
+        padding: 0.25rem;
         border-radius: 1.5rem;
     }
 
-    /* Inner Dimensions & Text */
     .roulette-dimensions {
-        width: 160px; 
+        width: 160px;
         height: 50px;
     }
-    .roulette-dimensions > div > div > div, 
+
+    .roulette-dimensions > div > div > div,
     .roulette-dimensions + div {
         height: 50px;
     }
+
     .roulette-dimensions > div > div > div span {
-        font-size: 0.875rem; /* text-sm */
+        font-size: 0.875rem;
     }
 
     .responsive-width {
-      width: calc(var(--spacing) * 35);
+        width: calc(var(--spacing) * 30);
     }
 }
+
+/* -------------------- DESKTOP LARGE (>= 1440px) -------------------- */
+@media (min-width: 1440px) {
+    .roulette-container {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
+    .roulette-wrapper {
+        padding: 0.25rem;
+        border-radius: 1.5rem;
+    }
+
+    .roulette-dimensions {
+        width: 160px;
+        height: 50px;
+    }
+
+    .roulette-dimensions > div > div > div,
+    .roulette-dimensions + div {
+        height: 50px;
+    }
+
+    .roulette-dimensions > div > div > div span {
+        font-size: 0.875rem;
+    }
+
+    .responsive-width {
+        width: calc(var(--spacing) * 40);
+    }
+}
+
+
 
 .force-wrap {
   overflow-wrap: break-word; /* For modern browsers */

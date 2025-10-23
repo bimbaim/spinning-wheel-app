@@ -883,12 +883,13 @@ export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPagePr
             </div>
 
             <div className="relative z-10 flex items-center justify-center p-8 h-[calc(100vh-120px)] overflow-hidden">
-              <div className="
+              {/* <div className="
                     grid roulette-container
                     p-4 w-full max-w-[1px]
                     justify-items-center
                     items-start"
-              >
+              > */}
+                <div className={`grid roulette-container p-4 w-full justify-items-center ${roulettes.length === 1 ? 'single' : ''}`}>
                 {roulettes.map((roulette: any, index: number) => (
                   <div key={roulette.id} className="flex flex-col items-center gap-4 mb-6 roulette-item">
                     <div className="bg-black/10 backdrop-blur-sm rounded-[3rem] p-3">
