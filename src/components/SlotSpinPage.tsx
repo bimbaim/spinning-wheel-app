@@ -807,143 +807,170 @@ export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPagePr
 
         {/* Part 2 - Spin Roulettes */}
         {currentPart === 2 && (
+  <div className="absolute inset-0 z-20 animate-in fade-in slide-in-from-left duration-700 flex flex-col">
+    {/* 🔦 Flash overlay */}
+    {isSpinning && (
+      <div
+        id="flash-overlay"
+        className="fixed inset-0 z-[999] opacity-0 pointer-events-none transition-opacity duration-50"
+        style={{
+          backgroundColor: "rgba(240, 255, 255, 0.5)", // warm glow
+          mixBlendMode: "screen",
+        }}
+      ></div>
+    )}
 
-          <div className="absolute inset-0 z-20 animate-in fade-in slide-in-from-left duration-700">
+    {/* 💥 Bullet holes */}
+    {bulletHoles.map((hole) => (
+      <img
+        key={hole.id}
+        src="/effects/bullet-hole.png"
+        alt="bullet hole"
+        className="fixed z-[1000] pointer-events-none select-none"
+        style={{
+          top: hole.y - hole.size / 2,
+          left: hole.x - hole.size / 2,
+          width: `${hole.size}px`,
+          height: `${hole.size}px`,
+          opacity: 0.95,
+          transform: `rotate(${hole.rotation}deg)`,
+          transition: "opacity 0.3s ease",
+        }}
+      />
+    ))}
 
-            {/* 🔦 Flash overlay shown while spinning */}
-            {isSpinning && (
-              <div
-                id="flash-overlay"
-                className="fixed inset-0 z-[999] opacity-0 pointer-events-none transition-opacity duration-50"
-                style={{
-                  backgroundColor: "rgba(240, 255, 255, 0.5)", // warm orange-yellow glow
-                  mixBlendMode: "screen",
-                }}
-              ></div>
-            )}
+    {/* 🎛 Header controls */}
+    <div className="relative z-10 p-4 sm:p-6 flex items-center justify-between">
+      <Button
+        onClick={goToPart1}
+        variant="ghost"
+        className="text-white hover:text-white hover:bg-white/20 border border-white/30"
+        disabled={isSpinning}
+      >
+        <ChevronLeft className="w-5 h-5 mr-2" />
+        Back to Settings
+      </Button>
 
-            {bulletHoles.map((hole) => (
-              <img
-                key={hole.id}
-                src="/effects/bullet-hole.png"
-                alt="bullet hole"
-                className="fixed z-[1000] pointer-events-none select-none"
-                style={{
-                  top: hole.y - hole.size / 2,
-                  left: hole.x - hole.size / 2,
-                  width: `${hole.size}px`,
-                  height: `${hole.size}px`,
-                  opacity: 0.95,
-                  transform: `rotate(${hole.rotation}deg)`,
-                  transition: "opacity 0.3s ease",
-                }}
-              />
-            ))}
-
-
-
-
-            <div className="relative z-10 p-6 flex items-center justify-between">
-              <Button
-                onClick={goToPart1}
-                variant="ghost"
-                className="text-white hover:text-white hover:bg-white/20 border border-white/30"
-                disabled={isSpinning}
-              >
-                <ChevronLeft className="w-5 h-5 mr-2" />
-                Back to Settings
-              </Button>
-              <div className="text-center">
-                <h1 className="text-white text-3xl drop-shadow-lg">Spin Time!</h1>
-                <p className="text-white/80 text-sm mt-1">
-                  Press <kbd className="px-2 py-1 bg-white/20 rounded">Enter</kbd> to start
-                </p>
-                {preSelectedPrizeObj && (
-                  <div className="mt-2 inline-flex items-center gap-2 bg-yellow-500/20 backdrop-blur-sm px-4 py-2 rounded-lg border border-yellow-500/50">
-                    <Trophy className="w-4 h-4 text-yellow-400" />
-                    <span className="text-yellow-300 font-medium">Prize: {preSelectedPrizeObj.name}</span>
-                    <span className="text-yellow-400 text-sm">(Qty: {preSelectedPrizeObj.quantity})</span>
-                  </div>
-                )}
-              </div>
-              <div className="w-40"></div>
-            </div>
-
-            <div className="relative z-10 flex items-center justify-center p-8 h-[calc(100vh-120px)] overflow-hidden">
-              <div
-                className="
-      grid gap-8 p-4 w-full max-w-[1600px]
-      justify-items-center
-      items-start
-    "
-                style={{
-                  gridTemplateColumns:
-                    roulettes.length <= 3
-                      ? `repeat(${roulettes.length}, minmax(0, 1fr))`
-                      : roulettes.length <= 5
-                        ? "repeat(5, minmax(0, 1fr))"
-                        : roulettes.length <= 6
-                          ? "repeat(3, minmax(0, 1fr))"
-                          : "repeat(5, minmax(0, 1fr))",
-                  gridTemplateRows: roulettes.length > 5 ? "repeat(2, 1fr)" : "repeat(1, 1fr)",
-                }}
-              >
-
-                {roulettes.map((roulette: any, index: number) => (
-                  <div key={roulette.id} className="flex flex-col items-center">
-                    <div className="bg-black/10 backdrop-blur-sm rounded-[3rem] p-3">
-                      <div className="bg-gradient-to-b from-blue-600 via-blue-500 to-blue-600 rounded-2xl p-6 shadow-2xl border-4 border-blue-700">
-                        <div className="bg-slate-900 rounded-xl p-4 shadow-inner">
-                          <div className="flex items-center justify-center mb-3 gap-2">
-                            <User className="w-4 h-4 text-blue-400" />
-                            <h3 className="text-blue-400 text-center text-sm">#{index + 1}</h3>
-                          </div>
-                          <div className="relative w-64 h-24 bg-white rounded-xl overflow-hidden shadow-xl border-4 border-slate-800">
-                            <div className="absolute inset-0 flex flex-col">
-                              <div
-                                className="absolute w-full"
-                                style={getTransform(roulette.participantSlotPos, roulette.snapshotParticipants.length)}
-                              >
-                                {roulette.snapshotParticipants.length > 0 ? (
-                                  roulette.snapshotParticipants
-                                    .concat(roulette.snapshotParticipants)
-                                    .concat(roulette.snapshotParticipants)
-                                    .map((p: Participant, idx: number) => ( // ✅ tentukan tipe Participant
-                                      <div
-                                        key={`${p.id}-${idx}`}
-                                        className="h-24 flex items-center justify-center px-4 border-b border-slate-200 bg-white/30 backdrop-blur-sm"
-                                      >
-                                        <span className="text-xl font-bold truncate max-w-full text-center text-black">
-                                          {p.name}
-                                        </span>
-                                      </div>
-                                    ))
-                                ) : (
-                                  <div className="h-24 flex items-center justify-center bg-white/30 backdrop-blur-sm">
-                                    <span className="text-xl font-bold text-slate-400">No participants</span>
-                                  </div>
-                                )}
-                              </div>
-
-                            </div>
-                            <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-24 border-y-4 border-blue-500 pointer-events-none"></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {roulette.showResult && roulette.selectedParticipant && (
-                      <div className="mt-4 bg-gradient-to-r from-green-500/20 to-teal-500/20 backdrop-blur-lg rounded-xl border-2 border-green-500/80 px-4 py-3 animate-in fade-in zoom-in duration-500">
-                        <p className="text-green-300 text-xs text-center mb-1">🎉 Winner</p>
-                        <p className="text-white text-sm font-bold text-center">{roulette.selectedParticipant.name}</p>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
+      <div className="text-center flex-1">
+        <h1 className="text-white text-2xl sm:text-3xl drop-shadow-lg">Spin Time!</h1>
+        <p className="text-white/80 text-sm mt-1 hidden sm:block">
+          Press <kbd className="px-2 py-1 bg-white/20 rounded">Enter</kbd> to start
+        </p>
+        {preSelectedPrizeObj && (
+          <div className="mt-2 inline-flex items-center gap-2 bg-yellow-500/20 backdrop-blur-sm px-3 py-2 rounded-lg border border-yellow-500/50">
+            <Trophy className="w-4 h-4 text-yellow-400" />
+            <span className="text-yellow-300 font-medium">Prize: {preSelectedPrizeObj.name}</span>
+            <span className="text-yellow-400 text-sm">(Qty: {preSelectedPrizeObj.quantity})</span>
           </div>
         )}
+      </div>
+      <div className="w-12 sm:w-40"></div>
+    </div>
+
+    {/* 🌀 Roulette grid */}
+    <div className="relative z-10 flex-grow flex flex-col items-center justify-center px-3 sm:p-8 overflow-hidden">
+      <div
+        className="
+          grid gap-6 sm:gap-8 p-4 w-full max-w-[1600px]
+          justify-items-center items-start
+        "
+        style={{
+          gridTemplateColumns:
+            roulettes.length <= 2
+              ? "repeat(2, minmax(0, 1fr))"
+              : roulettes.length <= 3
+                ? "repeat(3, minmax(0, 1fr))"
+                : roulettes.length <= 4
+                  ? "repeat(2, minmax(0, 1fr))"
+                  : roulettes.length <= 6
+                    ? "repeat(3, minmax(0, 1fr))"
+                    : "repeat(5, minmax(0, 1fr))",
+          gridTemplateRows:
+            roulettes.length > 4
+              ? "repeat(auto-fit, minmax(0, 1fr))"
+              : "repeat(1, 1fr)",
+        }}
+      >
+        {roulettes.map((roulette: any, index: number) => (
+          <div key={roulette.id} className="flex flex-col items-center w-full max-w-[280px] sm:max-w-none">
+            <div className="bg-black/10 backdrop-blur-sm rounded-[2rem] p-3 w-full">
+              <div className="bg-gradient-to-b from-blue-600 via-blue-500 to-blue-600 rounded-2xl p-4 sm:p-6 shadow-2xl border-4 border-blue-700">
+                <div className="bg-slate-900 rounded-xl p-4 shadow-inner">
+                  <div className="flex items-center justify-center mb-3 gap-2">
+                    <User className="w-4 h-4 text-blue-400" />
+                    <h3 className="text-blue-400 text-center text-sm">#{index + 1}</h3>
+                  </div>
+
+                  <div className="relative w-52 sm:w-64 h-20 sm:h-24 bg-white rounded-xl overflow-hidden shadow-xl border-4 border-slate-800">
+                    <div className="absolute inset-0 flex flex-col">
+                      <div
+                        className="absolute w-full"
+                        style={getTransform(
+                          roulette.participantSlotPos,
+                          roulette.snapshotParticipants.length
+                        )}
+                      >
+                        {roulette.snapshotParticipants.length > 0 ? (
+                          roulette.snapshotParticipants
+                            .concat(roulette.snapshotParticipants)
+                            .concat(roulette.snapshotParticipants)
+                            .map((p: Participant, idx: number) => (
+                              <div
+                                key={`${p.id}-${idx}`}
+                                className="h-20 sm:h-24 flex items-center justify-center px-4 border-b border-slate-200 bg-white/30 backdrop-blur-sm"
+                              >
+                                <span className="text-lg sm:text-xl font-bold truncate max-w-full text-center text-black">
+                                  {p.name}
+                                </span>
+                              </div>
+                            ))
+                        ) : (
+                          <div className="h-20 sm:h-24 flex items-center justify-center bg-white/30 backdrop-blur-sm">
+                            <span className="text-lg sm:text-xl font-bold text-slate-400">
+                              No participants
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-20 sm:h-24 border-y-4 border-blue-500 pointer-events-none"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {roulette.showResult && roulette.selectedParticipant && (
+              <div className="mt-3 sm:mt-4 bg-gradient-to-r from-green-500/20 to-teal-500/20 backdrop-blur-lg rounded-xl border-2 border-green-500/80 px-3 py-2 sm:px-4 sm:py-3 animate-in fade-in zoom-in duration-500">
+                <p className="text-green-300 text-xs text-center mb-1">🎉 Winner</p>
+                <p className="text-white text-sm sm:text-base font-bold text-center">
+                  {roulette.selectedParticipant.name}
+                </p>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* 📱 Tap-to-Spin Button (only for mobile & tablet) */}
+      {typeof window !== "undefined" && window.innerWidth < 1024 && (
+        <Button
+          onClick={() => {
+            if (!isSpinning && roulettes.length > 0) handleMultiSpin();
+          }}
+          disabled={isSpinning}
+          className={`mt-6 sm:mt-10 px-8 py-4 rounded-2xl font-bold text-white text-lg shadow-xl transition-all duration-300 ${
+            isSpinning
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-red-600 hover:bg-red-700 active:scale-95"
+          }`}
+        >
+          🎯 Tap to Spin
+        </Button>
+      )}
+    </div>
+  </div>
+)}
+
       </div>
     </>
   );
