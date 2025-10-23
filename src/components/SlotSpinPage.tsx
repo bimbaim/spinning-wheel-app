@@ -808,7 +808,7 @@ export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPagePr
         {/* Part 2 - Spin Roulettes */}
         {currentPart === 2 && (
 
-        <div className="relative inset-0 z-20 animate-in fade-in slide-in-from-left duration-700">
+          <div className="relative inset-0 z-20 animate-in fade-in slide-in-from-left duration-700">
 
             {/* 🔦 Flash overlay shown while spinning */}
             {isSpinning && (
@@ -859,7 +859,7 @@ export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPagePr
                   Press <kbd className="px-2 py-1 bg-white/20 rounded">Enter</kbd> to start
                 </p>
                 {preSelectedPrizeObj && (
-  <div className="
+                  <div className="
     mt-4 inline-flex items-center gap-4     {/* Increased top margin and gap */}
     bg-yellow-500/40 backdrop-blur-lg       {/* Darker, more intense blur background */}
     px-8 py-4                               {/* Significantly increased padding */}
@@ -867,28 +867,28 @@ export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPagePr
     border-2 border-yellow-300/80           {/* Thicker, more visible border */}
     transform hover:scale-[1.02] transition duration-200 {/* Added subtle hover effect */}
   ">
-    <Trophy className="w-8 h-8 text-yellow-300" /> {/* Much larger icon and brighter color */}
-    
-    <span className="text-yellow-300 font-extrabold text-xl tracking-wide"> {/* Largest, brightest, boldest text */}
-      PRIZE: {preSelectedPrizeObj.name}
-    </span>
-    
-    <span className="text-yellow-300 text-lg font-semibold"> {/* Larger, clearer quantity text */}
-      (Qty: {preSelectedPrizeObj.quantity})
-    </span>
-  </div>
-)}
+                    <Trophy className="w-8 h-8 text-yellow-300" /> {/* Much larger icon and brighter color */}
+
+                    <span className="text-yellow-300 font-extrabold text-xl tracking-wide"> {/* Largest, brightest, boldest text */}
+                      PRIZE: {preSelectedPrizeObj.name}
+                    </span>
+
+                    <span className="text-yellow-300 text-lg font-semibold"> {/* Larger, clearer quantity text */}
+                      (Qty: {preSelectedPrizeObj.quantity})
+                    </span>
+                  </div>
+                )}
               </div>
               <div className="w-40"></div>
             </div>
 
             <div className="relative z-10 flex items-center justify-center p-8 h-[calc(100vh-120px)] overflow-hidden">
-            <div className="
+              <div className="
                     grid roulette-container
                     p-4 w-full max-w-[1px]
                     justify-items-center
                     items-start"
-            >
+              >
                 {roulettes.map((roulette: any, index: number) => (
                   <div key={roulette.id} className="flex flex-col items-center gap-4 mb-6 roulette-item">
                     <div className="bg-black/10 backdrop-blur-sm rounded-[3rem] p-3">
@@ -898,7 +898,7 @@ export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPagePr
                             <User className="w-4 h-4 text-blue-400" />
                             <h3 className="text-blue-400 text-center text-sm">#{index + 1}</h3>
                           </div>
-                          <div className="relative roulette-item-size w-40 h-24 gap-6 bg-white rounded-xl overflow-hidden shadow-xl border-4 border-slate-800">
+                          <div className="relative roulette-item-size responsive-width h-24 bg-white rounded-xl overflow-hidden shadow-xl border-4 border-slate-800">
                             <div className="absolute inset-0 flex flex-col">
                               <div
                                 className="absolute w-full"
@@ -943,27 +943,17 @@ export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPagePr
               </div>
             </div>
             {/* 📱 Spin Button only for mobile & tablet (Up to large screens) */}
-            <div className="mt-8 flex justify-center mobile-tablet-only">
-              <Button
+            <div className="mt-8 flex justify-center lg:hidden mobile-tablet-only">
+              <button
                 onClick={() => {
                   if (!isSpinning && roulettes.length > 0) handleMultiSpin();
                 }}
-                disabled={isSpinning}
-                // Updated button design with better contrast and size
-                className={`
-      px-12 py-5 rounded-full 
-      font-extrabold text-white text-xl uppercase tracking-wider
-      shadow-2xl transition-all duration-300 transform 
-      
-      ${isSpinning
-                    ? "bg-gray-500 cursor-not-allowed shadow-inner"
-                    : "bg-red-600 hover:bg-red-700 active:scale-[0.98] active:shadow-inner"
-                  }
-    `}
+                className={`spin-button ${isSpinning || roulettes.every(r => r.showResult) ? "disabled" : ""}`}
               >
                 🎯 Spin Now!
-              </Button>
+              </button>
             </div>
+
           </div>
         )}
       </div>

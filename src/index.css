@@ -828,6 +828,10 @@
     width: calc(var(--spacing) * 20);
   }
 
+  .w-30 {
+    width: calc(var(--spacing) * 30);
+  }
+
   .w-40 {
     width: calc(var(--spacing) * 40);
   }
@@ -3905,6 +3909,10 @@ html {
     .roulette-container {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+
+    .responsive-width {
+      width: calc(var(--spacing) * 55);
+    }
 }
 
 /* DESKTOP (> 1024px): 5 Columns */
@@ -3912,6 +3920,9 @@ html {
     .roulette-container {
         grid-template-columns: repeat(5, minmax(0, 1fr));
     }
+
+   
+
 }
 
 /* ========================================================= */
@@ -3953,6 +3964,12 @@ html {
     .roulette-dimensions > div > div > div span {
         font-size: 1.25rem; /* text-xl */
     }
+
+    .responsive-width {
+      width: calc(var(--spacing) * 40);
+    }
+
+    
 }
 
 
@@ -3976,9 +3993,43 @@ html {
     .roulette-dimensions > div > div > div span {
         font-size: 0.875rem; /* text-sm */
     }
+
+    .responsive-width {
+      width: calc(var(--spacing) * 35);
+    }
 }
 
 .force-wrap {
   overflow-wrap: break-word; /* For modern browsers */
   word-break: break-word;    /* For older browsers */
+}
+
+.spin-button {
+  padding: 1rem 2rem;              /* px-8 py-4 */
+  border-radius: 0.5rem;           /* rounded-lg */
+  font-weight: 700;                 /* font-bold */
+  font-size: 1.125rem;              /* text-lg */
+  text-transform: uppercase;        /* uppercase */
+  letter-spacing: 0.05em;           /* tracking-wide */
+  color: white;                     /* text-white */
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); /* shadow-lg */
+  transition: all 0.2s ease-in-out; /* transition-all duration-200 */
+  transform: translateZ(0);         /* transform */
+  cursor: pointer;
+  background-color: #dc2626;        /* bg-red-600 */
+}
+
+.spin-button:hover {
+  background-color: #b91c1c;        /* hover:bg-red-700 */
+}
+
+.spin-button:active {
+  transform: scale(0.97);           /* active:scale-[0.97] */
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); /* active:shadow-inner */
+}
+
+.spin-button.disabled {
+  background-color: #6b7280;        /* bg-gray-500 */
+  cursor: not-allowed;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); /* shadow-inner */
 }
