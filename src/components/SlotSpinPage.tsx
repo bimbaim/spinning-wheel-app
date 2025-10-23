@@ -625,6 +625,19 @@ export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPagePr
     // }, 2000);
   };
 
+  // useEffect(() => {
+  //   const handleKeyPress = (e: KeyboardEvent) => {
+  //     if (e.key === "Enter") {
+  //       if (currentPart === 2 && !isSpinning && roulettes.length > 0) {
+  //         handleMultiSpin();
+  //       }
+  //     }
+  //   };
+
+  //   window.addEventListener("keydown", handleKeyPress);
+  //   return () => window.removeEventListener("keydown", handleKeyPress);
+  // }, [currentPart, isSpinning, participants, prizes, preSelectedPrizeId, spinCount, roulettes]);
+
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (e.key === "Enter") {
@@ -634,9 +647,23 @@ export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPagePr
       }
     };
 
+    const handleTouchOrClick = () => {
+      if (currentPart === 2 && !isSpinning && roulettes.length > 0) {
+        handleMultiSpin();
+      }
+    };
+
     window.addEventListener("keydown", handleKeyPress);
-    return () => window.removeEventListener("keydown", handleKeyPress);
+    window.addEventListener("click", handleTouchOrClick);
+    window.addEventListener("touchstart", handleTouchOrClick);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyPress);
+      window.removeEventListener("click", handleTouchOrClick);
+      window.removeEventListener("touchstart", handleTouchOrClick);
+    };
   }, [currentPart, isSpinning, participants, prizes, preSelectedPrizeId, spinCount, roulettes]);
+
 
   // const participantTotalRepeated = participants.length > 0 ? participants.length * 3 : 1;
 
