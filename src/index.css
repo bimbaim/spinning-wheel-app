@@ -3887,12 +3887,23 @@ html {
 /* 0. MOBILE/TABLET ONLY ELEMENTS                            */
 /* ========================================================= */
 .mobile-tablet-only {
+    display: -webkit-box;
+    display: -ms-flexbox;
     display: flex; /* Default for mobile/tablet */
 }
 
-@media (min-width: 1024px) {
+/* 1. Hide on large desktop screens (>= 1440px) */
+@media (min-width: 1440px) {
     .mobile-tablet-only {
-        display: none !important; /* Hide on desktop */
+        /* This hides it on very large screens */
+        display: none !important; 
+    }
+}
+/* 2. Ensure it's explicitly shown for iPad Landscape and Small Desktop (1024px to 1439.98px) */
+@media (min-width: 1024px) and (max-width: 1439.98px) {
+    .mobile-tablet-only {
+        /* This overrides the hide rule if one was previously applied and keeps it visible */
+        display: flex !important; 
     }
 }
 
@@ -3902,8 +3913,10 @@ html {
 
 /* -------------------- MOBILE (< 640px) -------------------- */
 .roulette-container {
+    display: -ms-grid;
     display: grid;
     gap: 2rem;
+    -ms-grid-columns: minmax(0, 1fr);
     grid-template-columns: repeat(1, minmax(0, 1fr));
 }
 
@@ -3933,6 +3946,7 @@ html {
 /* -------------------- TABLET (640px - 1023.98px) -------------------- */
 @media (min-width: 640px) and (max-width: 1023.98px) {
     .roulette-container {
+        -ms-grid-columns: (minmax(0, 1fr))[2];
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
@@ -3963,6 +3977,7 @@ html {
 /* -------------------- DESKTOP SMALL (1024px - 1439.98px) -------------------- */
 @media (min-width: 1024px) and (max-width: 1439.98px) {
     .roulette-container {
+        -ms-grid-columns: (minmax(0, 1fr))[5];
         grid-template-columns: repeat(5, minmax(0, 1fr));
     }
 
@@ -3993,6 +4008,7 @@ html {
 /* -------------------- DESKTOP LARGE (>= 1440px) -------------------- */
 @media (min-width: 1440px) {
     .roulette-container {
+        -ms-grid-columns: (minmax(0, 1fr))[5];
         grid-template-columns: repeat(5, minmax(0, 1fr));
     }
 
@@ -4027,53 +4043,76 @@ html {
   word-break: break-word;    /* For older browsers */
 }
 
-/* Container around the button */
+/* Container around the button - REDUCED SIZE */
 .squid-game-container {
-  padding: 10px;
-  background-color: #111;           /* dark background for contrast */
-  border-radius: 10px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  padding: 8px; /* Reduced from 15px */
+  background-color: #111;
+  border-radius: 50%;
+  -webkit-box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4); /* Slightly smaller shadow */
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
 }
 
-/* Squid Game O-style button in green */
+/* Squid Game O-style button in green - REDUCED SIZE */
 .squid-game-button {
-  width: 120px;
-  height: 120px;
-  border: 12px solid #a7f3d0;       /* light green border for O effect */
+  width: 70px; /* Reduced from 120px */
+  height: 70px; /* Reduced from 120px */
+  border: 7px solid #a7f3d0; /* Reduced from 12px */
   border-radius: 50%;
-  background-color: #16a34a;         /* green base */
+  background-color: #16a34a;
   color: white;
-  font-size: 6rem;                  /* large font size */
+  font-size: 3.5rem; /* Reduced from 6rem */
   font-weight: 400;
   cursor: pointer;
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-transition: background-color 0.2s, -webkit-transform 0.2s ease-in-out, -webkit-box-shadow 0.2s;
+  transition: background-color 0.2s, -webkit-transform 0.2s ease-in-out, -webkit-box-shadow 0.2s;
+  -o-transition: transform 0.2s ease-in-out, background-color 0.2s, box-shadow 0.2s;
   transition: transform 0.2s ease-in-out, background-color 0.2s, box-shadow 0.2s;
+  transition: transform 0.2s ease-in-out, background-color 0.2s, box-shadow 0.2s, -webkit-transform 0.2s ease-in-out, -webkit-box-shadow 0.2s;
 }
 
 /* Hover effect */
 .squid-game-button:hover {
   background-color: #22c55e;
-  transform: scale(1.1);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+  -webkit-transform: scale(1.1);
+      -ms-transform: scale(1.1);
+          transform: scale(1.1);
+  -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+          box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Adjusted shadow */
 }
 
 /* Press effect */
 .squid-game-button:active {
-  transform: scale(0.95);
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+  -webkit-transform: scale(0.95);
+      -ms-transform: scale(0.95);
+          transform: scale(0.95);
+  -webkit-box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.7);
+          box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.7); /* Adjusted shadow */
 }
 
-/* Disabled state */
+/* Disabled state - NO CHANGE NEEDED */
 .squid-game-button:disabled {
   background-color: #6b7280;
   border-color: #9ca3af;
   cursor: not-allowed;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+  -webkit-box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+          box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
   color: #d1d5db;
 }
-

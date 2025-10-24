@@ -885,7 +885,25 @@ export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPagePr
                   </div>
                 )}
               </div>
-              <div className="w-40"></div>
+              <div className="w-40">
+                {/* 📱 Spin Button only for mobile & tablet (Up to large screens) */}
+            <div className="mt-8 flex justify-center lg:hidden mobile-tablet-only">
+              <div className="squid-game-container">
+                <button
+                  onClick={() => {
+    // Note: You technically don't need this 'if' check now,
+    // but it's fine to keep it as a safeguard.
+                  if (!isSpinning && roulettes.length > 0) handleMultiSpin();
+                }}
+                // *** THIS IS THE CRITICAL CHANGE ***
+                className="squid-game-button"
+                disabled={isDisabled}
+                >
+                  O
+                </button>
+              </div>
+            </div>
+              </div>
             </div>
 
             <div className="relative z-10 flex items-center justify-center p-8 h-[calc(100vh-120px)] overflow-hidden">
@@ -949,23 +967,7 @@ export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPagePr
                 ))}
               </div>
             </div>
-            {/* 📱 Spin Button only for mobile & tablet (Up to large screens) */}
-            <div className="mt-8 flex justify-center lg:hidden mobile-tablet-only">
-              <div className="squid-game-container">
-                <button
-                  onClick={() => {
-    // Note: You technically don't need this 'if' check now,
-    // but it's fine to keep it as a safeguard.
-                  if (!isSpinning && roulettes.length > 0) handleMultiSpin();
-                }}
-                // *** THIS IS THE CRITICAL CHANGE ***
-                className="squid-game-button"
-                disabled={isDisabled}
-                >
-                  O
-                </button>
-              </div>
-            </div>
+            
 
 
           </div>
