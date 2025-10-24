@@ -814,7 +814,7 @@ export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPagePr
         {/* Part 2 - Spin Roulettes */}
         {currentPart === 2 && (
 
-          <div className="relative inset-0 z-20 animate-in fade-in slide-in-from-left duration-700">
+          <div className="relative inset-0 z-20 animate-in fade-in slide-in-from-left duration-700 h-full container-part2">
 
             {/* 🔦 Flash overlay shown while spinning */}
             {isSpinning && (
@@ -906,7 +906,12 @@ export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPagePr
               </div>
             </div>
 
-            <div className="relative z-10 flex items-center justify-center p-8 h-[calc(100vh-120px)] overflow-hidden">
+            {/* <div className="relative z-10 flex items-center justify-center p-8 h-[calc(100vh-120px)] overflow-hidden"> */}
+            <div 
+                className={`relative z-10 flex items-center justify-center p-8 overflow-hidden ${
+                  roulettes.length === 1 ? 'single-container' : ''
+                }`}
+              >
               {/* <div className="
                     grid roulette-container
                     p-4 w-full max-w-[1px]
@@ -917,12 +922,12 @@ export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPagePr
                 {roulettes.map((roulette: any, index: number) => (
                   <div key={roulette.id} className="flex flex-col items-center gap-4 mb-6 roulette-item">
                     <div className="bg-black/10 backdrop-blur-sm rounded-[3rem] p-3">
-                      <div className="bg-gradient-to-b from-blue-600 via-blue-500 to-blue-600 rounded-2xl p-6 shadow-2xl border-4 border-blue-700">
+                      <div className="bg-gradient-to-b from-blue-600 via-blue-500 to-blue-600 rounded-xl p-3 shadow-xl border-2 border-blue-700">
                         <div className="bg-slate-900 rounded-xl p-4 shadow-inner">
-                          <div className="flex items-center justify-center mb-3 gap-2">
+                          {/* <div className="flex items-center justify-center mb-3 gap-2">
                             <User className="w-4 h-4 text-blue-400" />
                             <h3 className="text-blue-400 text-center text-sm">#{index + 1}</h3>
-                          </div>
+                          </div> */}
                           <div className="relative roulette-item-size responsive-width h-24 bg-white rounded-xl overflow-hidden shadow-xl border-4 border-slate-800">
                             <div className="absolute inset-0 flex flex-col">
                               <div

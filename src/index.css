@@ -4980,6 +4980,10 @@ html {
 
 /* -------------------- DESKTOP SMALL (1024px - 1439.98px) -------------------- */
 @media (min-width: 1024px) and (max-width: 1439.98px) {
+
+  .container-part2 {
+    height: 100vh;
+  }
   .roulette-container {
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }
@@ -5032,6 +5036,11 @@ html {
 
 /* -------------------- DESKTOP LARGE (>= 1440px) -------------------- */
 @media (min-width: 1440px) {
+
+  .container-part2 {
+    height: 100vh;
+  }
+  
   .roulette-container {
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }
