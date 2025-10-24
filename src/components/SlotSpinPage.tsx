@@ -849,7 +849,7 @@ export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPagePr
 
 
 
-            <div className="relative z-10 p-6 flex items-center justify-between">
+            <div className="relative z-10 p-6 flex items-center justify-between part2-header">
               <Button
                 onClick={goToPart1}
                 variant="ghost"
@@ -938,7 +938,9 @@ export function SlotSpinPage({ isDemoMode, onBack, accessToken }: SlotSpinPagePr
                                         key={`${p.id}-${idx}`}
                                         className="h-24 flex items-center justify-center px-4 border-b border-slate-200 bg-white/30 backdrop-blur-sm"
                                       >
-                                        <span className="text-lg font-bold text-center text-black force-wrap ">
+                                        <span 
+                                          className={`text-lg font-bold text-center text-black force-wrap ${roulettes.length === 1 ? 'single-name' : ''}`}
+                                        >
                                           {p.name}
                                         </span>
                                       </div>

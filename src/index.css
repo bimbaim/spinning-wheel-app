@@ -4807,9 +4807,6 @@ html {
   align-items: flex-start; /* tetap dari atas */
 }
 
-.roulette-container.single .roulette-item .responsive-width {
-  width: 800px; /* contoh lebih lebar */
-}
 
 /* ========================================================= */
 /* 0. MOBILE/TABLET ONLY ELEMENTS                            */
@@ -4869,6 +4866,66 @@ html {
   width: calc(var(--spacing) * 40);
 }
 
+.part2-header {
+    flex-direction:column-reverse;
+}
+
+
+.force-wrap {
+  overflow-wrap: break-word; /* For modern browsers */
+  word-break: break-word; /* For older browsers */
+}
+
+/* Container around the button - REDUCED SIZE */
+.squid-game-container {
+  padding: 4px; /* Reduced from 15px */
+  background-color: #111;
+  border-radius: 50%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4); /* Slightly smaller shadow */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Squid Game O-style button in green - REDUCED SIZE */
+.squid-game-button {
+  width: 55px; /* Reduced from 120px */
+  height: 55px; /* Reduced from 120px */
+  border: 7px solid #a7f3d0; /* Reduced from 12px */
+  border-radius: 50%;
+  background-color: #16a34a;
+  color: white;
+  font-size: 2.5rem; /* Reduced from 6rem */
+  font-weight: 400;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease-in-out, background-color 0.2s, box-shadow 0.2s;
+}
+
+/* Hover effect */
+.squid-game-button:hover {
+  background-color: #22c55e;
+  transform: scale(1.1);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Adjusted shadow */
+}
+
+/* Press effect */
+.squid-game-button:active {
+  transform: scale(0.95);
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.7); /* Adjusted shadow */
+}
+
+/* Disabled state - NO CHANGE NEEDED */
+.squid-game-button:disabled {
+  background-color: #6b7280;
+  border-color: #9ca3af;
+  cursor: not-allowed;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  color: #d1d5db;
+}
+
 /* -------------------- TABLET (640px - 1023.98px) -------------------- */
 @media (min-width: 640px) and (max-width: 1023.98px) {
   .roulette-container {
@@ -4897,6 +4954,28 @@ html {
   .responsive-width {
     width: calc(var(--spacing) * 55);
   }
+
+  .roulette-container.single .roulette-item .responsive-width {
+    width: 450px; /* contoh lebih lebar */
+  }
+
+  .single-name {
+    font-size: 25px;
+  }
+
+  .part2-header {
+      flex-direction:row;
+  }
+
+  .squid-game-container {
+      padding: 6px; /* Reduced from 15px */
+  }
+  .squid-game-button {
+    width: 75px; /* Reduced from 120px */
+    height: 75px; /* Reduced from 120px */
+    font-size: 3.5rem; /* Reduced from 6rem */
+  }
+
 }
 
 /* -------------------- DESKTOP SMALL (1024px - 1439.98px) -------------------- */
@@ -4927,6 +5006,28 @@ html {
   .responsive-width {
     width: calc(var(--spacing) * 30);
   }
+
+  .roulette-container.single .roulette-item .responsive-width {
+    width: 550px; /* contoh lebih lebar */
+  }
+
+  .single-name {
+    font-size: 45px;
+  }
+
+  .part2-header {
+      flex-direction:row;
+  }
+
+  .squid-game-container {
+      padding: 10px; /* Reduced from 15px */
+  }
+  .squid-game-button {
+    width: 95px; /* Reduced from 120px */
+    height: 95px; /* Reduced from 120px */
+    font-size: 4.5rem; /* Reduced from 6rem */
+  }
+
 }
 
 /* -------------------- DESKTOP LARGE (>= 1440px) -------------------- */
@@ -4957,59 +5058,27 @@ html {
   .responsive-width {
     width: calc(var(--spacing) * 40);
   }
+
+  .roulette-container.single .roulette-item .responsive-width {
+    width: 750px; /* contoh lebih lebar */
+  }
+
+  .single-name {
+    font-size: 45px;
+  }
+
+  .part2-header {
+      flex-direction:row;
+  }
+
+  .squid-game-container {
+      padding: 15px; /* Reduced from 15px */
+  }
+  .squid-game-button {
+    width: 120px; /* Reduced from 120px */
+    height: 120px; /* Reduced from 120px */
+    font-size: 6rem; /* Reduced from 6rem */
+  }
+
 }
 
-.force-wrap {
-  overflow-wrap: break-word; /* For modern browsers */
-  word-break: break-word; /* For older browsers */
-}
-
-/* Container around the button - REDUCED SIZE */
-.squid-game-container {
-  padding: 8px; /* Reduced from 15px */
-  background-color: #111;
-  border-radius: 50%;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4); /* Slightly smaller shadow */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-/* Squid Game O-style button in green - REDUCED SIZE */
-.squid-game-button {
-  width: 70px; /* Reduced from 120px */
-  height: 70px; /* Reduced from 120px */
-  border: 7px solid #a7f3d0; /* Reduced from 12px */
-  border-radius: 50%;
-  background-color: #16a34a;
-  color: white;
-  font-size: 3.5rem; /* Reduced from 6rem */
-  font-weight: 400;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s ease-in-out, background-color 0.2s, box-shadow 0.2s;
-}
-
-/* Hover effect */
-.squid-game-button:hover {
-  background-color: #22c55e;
-  transform: scale(1.1);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Adjusted shadow */
-}
-
-/* Press effect */
-.squid-game-button:active {
-  transform: scale(0.95);
-  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.7); /* Adjusted shadow */
-}
-
-/* Disabled state - NO CHANGE NEEDED */
-.squid-game-button:disabled {
-  background-color: #6b7280;
-  border-color: #9ca3af;
-  cursor: not-allowed;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
-  color: #d1d5db;
-}
